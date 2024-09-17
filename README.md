@@ -15,11 +15,21 @@
 ## Game Description:
 * L's Labyrinth is a exploration and combat based game where a player navigates through a maze to encounter enemies and level up to eventually escape. Players have a variety of combat options wherein they choose one of three classes to start and are able to boost different abilities- Health, Strength, Agility, Magic- by progressing through each class's skill tree.
 ![image](/Tree.png)
-### Classes
+---
+## Procedural Generation
+* The player will be able to navigate through a procedurally generated maze structure with starting and ending rooms present in each generation. The procedural generation of the maze will be implemented using Wilson’s algorithm. Start and end rooms will be created with pathways procedurally generated between.
+---
+## Enemy AI
+* The npc enemies will be scaled with different class strengths to resemble a advanced player. Combat will be turn based with advanced enemies able to choose attacks based on the player's current ability scores and the enemy's own ability scores. Starter enemies will choose attacks based on random probability
+---
+## Gameplay
+* The player will progress through the maze, searching for enemies and power ups. Defeating enemies awards the player points towards their ability tree. Advancing in the ability tree will allow the player to gain new attacks and improve their ability score to eventually defeat boss rooms.
+* Game will be top-down single player with the player always centered in the screen
+* ### Classes
 * Rogue - higher speed
 * Mage - higher magic
 * Fighter - higher strength
-### Ability Scores/Stats
+* ### Ability Scores/Stats
 * Set base stats at beginning; 12 points to distribute between the following below
 * Magic, Health, Strength, Agility
 * Agility: affects number of actions per turn
@@ -29,27 +39,27 @@
 * Health: affects base hit points
 * If implementing mp system, health will impact mp as well
 * Can gain additional ability score points to distribute to any stat through skill tree & level up (maybe)
-### Skill Tree
+* ### Skill Tree
 * 3 trees, one for each class
 * Player progresses through skill tree with points acquired from skill point bar (like exp bar) which is filled by combat encounters
 * Skill tree branches/upgrades:
-#### Rogue
+* #### Rogue
 * Agility ability score & minor health increases
 * Magic & physical damage modifier
 * Magic & physical resistance modifier
 * Magic & physical attack unlock
-#### Mage
+* #### Mage
 * Magic ability score increases
 * Magic damage modifier
 * Magic resistance modifier
 * Magic attack unlock/healing spells unlock
-#### Fighter
+* #### Fighter
 * Strength ability score increases
 * Physical damage modifier
 * Physical resistance modifier
 * Physical attack unlock
 * Ability score points to apply to any ability score can be unlocked through any tree
-### Combat
+* ### Combat
 * Turn-based with agility determining order and frequency of actions
 * Combat options:
 * Attack (physical damage)
@@ -61,22 +71,12 @@
 * Status effects
 * Heal (basic heal available at start?; more efficient heal available if player has unlocked heal spells from mage skill tree)
 * Escape (dependent on agility; no exp or skill points gained)
-### Exp/Level up
+* ### Exp/Level up
 * Health increases
 * Gain ability score points every x levels (maybe)
-### Enemy encounters
+* ### Enemy encounters
 * Gain exp & skill points (both are a points/bar fill system)
 * Stock enemies with modifiers added based on player progression
----
-## Procedural Generation
-* The player will be able to navigate through a procedurally generated maze structure with starting and ending rooms present in each generation. The procedural generation of the maze will be implemented using Wilson’s algorithm. Start and end rooms will be created with pathways procedurally generated between.
----
-## Enemy AI
-* The npc enemies will be scaled with different class strengths to resemble a advanced player. Combat will be turn based with advanced enemies able to choose attacks based on the player's current ability scores and the enemy's own ability scores. Starter enemies will choose attacks based on random probability
----
-## Gameplay
-* The player will progress through the maze, searching for enemies and power ups. Defeating enemies awards the player points towards their ability tree. Advancing in the ability tree will allow the player to gain new attacks and improve their ability score to eventually defeat boss rooms.
-* Game will be top-down single player with the player always centered in the screen
 ---
 ## Procedural Generation
 ### Midterm Goals:
