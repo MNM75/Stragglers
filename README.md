@@ -102,11 +102,12 @@
 ---
 Final Goals | Weight
 --- | ---
-Procedurally generated npc/enemy locations. | 20%
-Textures are added to the map. | 10%
-Full combat encounter implemented. | 20%
-Enemies adjust combat actions according to player actions & status effects. | 15%
-Three different enemies implemented(including a boss). | 15%
+Procedural Generation:<BR>  -  5%: Beginning and Ending rooms with 10 rooms populated with entities (helpful and harmful). The pathways to these rooms and entity locations within them are procedurally generated<BR>  -  5%: Textures and sprites are present and consistent throughout the map and within each generation.<BR>  -  5%: Each generation of the map is significantly different compared to the last | 15%
+Enemy AI:<BR>  -  5%: The player is able to engage in full turn-based combat encounters that play to completion with individual enemies includes an escape combat option, which enemies may respond to by following the character<BR>  -  5%: Enemies adjust combat actions according to player actions & status effects.<BR>  -  5%: 3 different enemy types are implemented (including a boss whose fighting style reacts more accurately to the player compared to the other types)  | 15%
+The player character can move throughout the map with the camera centered on them and interact with entities/the world where gameplay physics are consistent (player is restricted to walls, can’t move through objects. etc) | 15%
+The player is able to customize their character by putting skill points into different abilities that affect the gameplay/combat  | 15%
+All game scenes/menu are present and triggered at appropriate times<BR>  -  Welcome scene, skill tree, gameplay map where the player is moving/exploring, combat scene, end scene when the player escapes the maze/dies in combat | 10%
+Checkpoints are present for if a player dies; they return to the last room cleared with all of the skill progress from that point | 10%
 ---
 ## Stretch Goal:
 * Combat involving multiple enemies.
