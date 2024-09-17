@@ -14,17 +14,21 @@
 ---
 ## Game Description:
 * L's Labyrinth is a exploration and combat based game where a player navigates through a maze to encounter enemies and level up to eventually escape. Players have a variety of combat options wherein they choose one of three classes to start and are able to boost different abilities- Health, Strength, Agility, Magic- by progressing through each class's skill tree.
-![image](files://C:\Users\mnmil\OneDrive\Documents\College\College 7\CS 1666\Tree.png)
+![image](/Tree.png)
 ---
 ## Procedural Generation
-* The player will be able to navigate through a procedurally generated maze structure with starting and ending rooms present in each generation. 
+* The player will be able to navigate through a procedurally generated maze structure with starting and ending rooms present in each generation. The procedural generation of the maze will be implemented using mainly Wilson’s algorithm, with a possibility of influence from Prims’s or Kruskal’s.
+---
+## Enemy AI
+* The npc enemies will be scaled with different class strengths to resemble a advanced player. Combat will be turn based with advanced enemies able to choose attacks based on the player's current ability scores and the enemy's own ability scores. Starter enemies will choose attacks based on random probability
 ---
 ## Gameplay
-*
+* The player will progress through the maze, searching for enemies and power ups. Defeating enemies awards the player points towards their ability tree. Advancing in the ability tree will allow the player to gain new attacks and improve their ability score to eventually defeat boss rooms.
+* Game will be top-down single player with the player always centered in the screen
 ---
 ## Procedural Generation
 ### Midterm Goals:
-* Procedurally generated map layout with starting and ending rooms present in each generation.
+* Maze will have a procedurally generated layout with starting and ending rooms present in each generation.
 * Player can move through the map with collisions in place (not moving through walls, running into nothing, etc).
 ### Final Goals:
 * Procedurally generated npc/enemy locations.
@@ -50,3 +54,4 @@ Three different enemies implemented(including a boss). | 15%
 ---
 ## Stretch Goal:
 * Combat involving multiple enemies.
+* Friendly npcs with additional dialogue options to gain skill tree points.
