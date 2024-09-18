@@ -1,3 +1,5 @@
+// An "end credits" slideshow of images, one from each team member, displayed for 3s each
+
 use bevy::{prelude::*, window::PresentMode};
 
 fn main() {
