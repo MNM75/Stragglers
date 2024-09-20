@@ -14,7 +14,7 @@
 ---
 ## Game Description:
 * L's Labyrinth is a exploration and combat based game where a player navigates through a maze to encounter enemies and level up to eventually escape. Players will have a variety of combat options in an encounter (attack, magic, heal, escape) and are able to boost different abilities which impact their stats--Health, Strength, Agility, Magic--by progressing through the skill tree.
-![image](/images/tree.png)
+![image](/images/skill-tree-V2.png)
 ---
 ## Procedural Generation
 * The player will be able to navigate through a procedurally generated maze structure with starting and ending rooms present in each generation. The procedural generation of the maze will be implemented using Wilson’s algorithm. Start and end rooms will be created with pathways procedurally generated between.
