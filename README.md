@@ -71,13 +71,13 @@
 ---
 Final Goals | Weight
 --- | ---
-Procedural Generation:<BR>  -  7%: Beginning and Ending rooms with 10 rooms populated with entities. The pathways to these rooms and entity locations within them are procedurally generated using Wilson's algorithm<BR>  -  7%: Textures and sprites are present and consistent throughout the map and within each generation.<BR>  -  6%: Each generation of the map is significantly different compared to the last | 20%
+Procedural Generation:<BR>  -  8%: Maze pathways and entity locations within them are procedurally generated using Wison's algorithm<BR>  -  7%: Maze contains begin room, end room, and eight other rooms throughout the maze<BR>  -  5%: Each generation of the map is significantly different compared to the last | 20%
 Enemy AI:<BR>  -  7%: The player is able to engage in full turn-based combat encounters that play to completion with individual enemies<BR>  -  7%: Enemies adjust combat actions according to player actions & status effects using resource assignment algorithm.<BR>  -  6%: 2 different enemy types are implemented, one with random attacks and another with calculated attacks that follow our ai implementation  | 20%
 The player character can move up, down, left, right, and diagonally throughout the map with the camera centered on them and interact with entities/the world where gameplay physics are consistent (player is restricted to walls, can’t move through objects. etc) | 10%
-The player is able to customize their character by putting skill points into different abilities that affect the gameplay/combat  | 10%
-All game scenes/menu are present and triggered at appropriate times<BR>  -  Welcome scene, skill tree, gameplay map where the player is moving/exploring, combat scene, end scene when the player escapes the maze/dies in combat | 10%
-Checkpoints are present for if a player dies; they return to the last room cleared with all of the skill progress from that point | 10%
+The player is able to customize their character by putting skill points into different abilities that affect the gameplay/combat. At start of game, player recieves 12 ability points to attribute to either Health, Strength, Agility, Magic.  | 10%
+All game scenes/menu are present and triggered at appropriate times<BR>  -  2%: Welcome scene where players atribute their starting ability scores<BR>  -  2%: Skill tree UI which includes the four abaility scores<BR>  -  2%: Gameplay map where the player is moving/exploring<BR>  -  2%: Combat scene including player sprite, enemy sprite, and attack choices<BR>  -  2%: End scene when the player escapes the maze/dies in combat | 10%
+After enemies are defeated, the player recieves skill points that can be used to unlock nodes in the skill tree UI | 10%
 ---
 ## Stretch Goal:
-*mplement two additional classes the player can choose from for a total of three: Fighter, Mage, Rogue. Each additional class includes an additional associated skill tree. Stat modifiers, ability score improvements, and abilities earned from different skill trees will stack.
+* Implement two additional classes the player can choose from for a total of three: Fighter, Mage, Rogue. Each additional class includes an additional associated skill tree. Stat modifiers, ability score improvements, and abilities earned from different skill trees will stack.
 * Addition of third enemy type: Boss, which will have more health and a "smarter" AI than regular enemies during combat, as well as offer more skill points upon defeat.
