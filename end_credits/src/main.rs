@@ -44,7 +44,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(SwitchTimer(Timer::from_seconds(6., TimerMode::Once)));
     commands
     .spawn(SpriteBundle {
-        texture: asset_server.load("littleguy2.png"),
+        texture: asset_server.load("Miko.png"),
         transform: Transform::from_xyz(0., 0., -1.),
         ..default()
     })
@@ -56,6 +56,27 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     })
     .insert(SwitchTimer(Timer::from_seconds(12., TimerMode::Once)));
+    commands
+    .spawn(SpriteBundle {
+        texture: asset_server.load("dungeonHall.PNG"),
+        transform: Transform::from_xyz(0., 0., -1.),
+        ..default()
+    })
+    .insert(SwitchTimer(Timer::from_seconds(15., TimerMode::Once)));
+    commands
+    .spawn(SpriteBundle {
+        texture: asset_server.load("Andre.png"),
+        transform: Transform::from_xyz(0., 0., -1.),
+        ..default()
+    })
+    .insert(SwitchTimer(Timer::from_seconds(18., TimerMode::Once)));
+    commands
+    .spawn(SpriteBundle {
+        texture: asset_server.load("Leo Liang.png"),
+        transform: Transform::from_xyz(0., 0., -1.),
+        ..default()
+    })
+    .insert(SwitchTimer(Timer::from_seconds(21., TimerMode::Once)));
 }
 
 fn change_image(time: Res<Time>, mut switch: Query<(&mut SwitchTimer, &mut Transform)>) {
