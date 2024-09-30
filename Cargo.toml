@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 bevy = "0.14"
 
+# Apply basic optimiations to our code in dev builds
 [profile.dev]
 opt-level = 1
 
