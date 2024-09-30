@@ -26,7 +26,7 @@ fn main(){
         }))
         .add_plugins(MapPlugin)
         .add_plugins(PlayerPlugin)
-        .add_plugins(SkillTreePlugin) // comment this out to remove the skill tree UI
+        //.add_plugins(SkillTreePlugin) // uncomment this to see skill tree UI
         /*
             add other plugins here
         */
