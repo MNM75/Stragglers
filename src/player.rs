@@ -21,6 +21,23 @@
 
     #[derive(Component)]
     struct Background;
+
+    pub struct Sides {
+        top: f32,
+        bottom: f32,
+        left: f32,
+        right: f32,
+    }
+    impl From<Vec3> for Sides {
+        fn from(pos: Vec3) -> Self {
+            Self {
+                top: pos.y + (TILE_SIZE as f32) / 2.,
+                bottom: pos.y - (TILE_SIZE as f32) / 2.,
+                left: pos.x - (TILE_SIZE as f32) / 2.,
+                right: pos.x + (TILE_SIZE as f32) / 2.,
+            }
+        }
+    }
     
     #[derive(Component)]
     struct Velocity {
@@ -123,7 +140,7 @@
             && new_pos.x <= LEVEL_W / 2. - (TILE_SIZE as f32) / 2.
         {
             //check collision
-            if (!check_wall_collision(new_pos, &wall_query)){
+            if !check_wall_collision(new_pos, &wall_query){
                 pt.translation = new_pos;
             }
         }
@@ -133,7 +150,7 @@
             && new_pos.y <= LEVEL_H / 2. - (TILE_SIZE as f32) / 2.
         {
              //check collision
-             if (!check_wall_collision(new_pos, &wall_query)){
+             if !check_wall_collision(new_pos, &wall_query){
                 pt.translation = new_pos;
             }
         }
@@ -144,12 +161,10 @@
         collider_query: &Query<&Transform, (With<Wall>, Without<Player>)>,
     ) -> bool {
         for collider_transform in collider_query.iter() {
-            if new_pos.x + (TILE_SIZE as f32) / 2. > collider_transform.translation.x - (TILE_SIZE as f32) / 2.
-            && new_pos.x - (TILE_SIZE as f32) / 2. < collider_transform.translation.x + (TILE_SIZE as f32) / 2.
-            && new_pos.y - (TILE_SIZE as f32) / 2. < collider_transform.translation.y + (TILE_SIZE as f32) / 2.
-            && new_pos.y + (TILE_SIZE as f32) / 2. > collider_transform.translation.y - (TILE_SIZE as f32) / 2.
-            {
-                return true;
+            let a: Sides = new_pos.into();
+            let b: Sides = collider_transform.translation.into();
+            if a.bottom <= b.top && a.top >= b.bottom && a.right >= b.left && a.left <= b.right {
+                return true
             }
         }
         return false;

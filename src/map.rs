@@ -11,9 +11,6 @@ struct Background;
 #[derive(Component)]
 pub struct Wall;
 
-#[derive(Component)]
-pub struct Collider;
-
 pub struct MapPlugin;
 
 impl Plugin for MapPlugin{
@@ -54,8 +51,8 @@ fn create_room(
      //while 10 rows are not filled, apply a tile to each column in a row
      while (y as f32)< (9 as f32) {
          //if current row is filled, move to next row up
-         if (i == 10){
-             t += Vec3::new((-10.0 *TILE_SIZE as f32),  TILE_SIZE as f32, 0.); //changing the transform value
+         if i == 10 {
+             t += Vec3::new(-10.0 *TILE_SIZE as f32,  TILE_SIZE as f32, 0.); //changing the transform value
              i=0;
              y+=1; 
          }
@@ -80,7 +77,6 @@ fn create_room(
                          layout: wall_layout_handle.clone(),
                      },
                      Wall,
-                     Collider,
                  ))
                  .insert(Background);
              } else { //add regular tile
