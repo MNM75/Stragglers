@@ -37,28 +37,6 @@ impl Plugin for SkillTreePlugin{
 
 
 fn init_skill_tree_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // initialize player points, ability scores, & stats
-    // commands.spawn((
-    //     Points {
-    //         ability_points: 12,
-    //         skill_points: 0,
-    //     },
-    //     AbilityScores {
-    //         strength: 0,
-    //         magic: 0,
-    //         agility: 0,
-    //         health: 0,
-    //     },
-    //     Stats {
-    //         atk: 0,
-    //         matk: 0,
-    //         def: 0,
-    //         mdef: 0,
-    //         spd: 0,
-    //         hp: 0,
-    //     }
-    // ));
-
     // bring in asset for skill tree ui
     commands.spawn(SpriteBundle {
         texture: asset_server.load("skillTreeUI.png"),
@@ -102,7 +80,7 @@ fn init_skill_tree_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
     );
 
-    // Ability Scores
+    // Ability Scores ------------------------------------------------------------
     // Strength
     commands.spawn(
         TextBundle::from_section(
@@ -172,7 +150,7 @@ fn init_skill_tree_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
     );
 
-    // Player Stats
+    // Player Stats ------------------------------------------------------------
     // hp
     commands.spawn(
         TextBundle::from_section(
