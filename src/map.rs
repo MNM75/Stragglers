@@ -11,7 +11,7 @@ const PLAYER_SPEED: f32 = 500.;
 const ACCEL_RATE: f32 = 5000.;
 
 const LEVEL_W: f32 = 1920.;
-const LEVEL_H: f32 = 1080.;
+const LEVEL_H: f32 = 1920.; // originally 1080 but made a little taller to see full room
 enum PlayerType {
     Character,
 }
@@ -24,6 +24,12 @@ struct Tile;
 
 #[derive(Component)]
 struct Background;
+
+#[derive(Component)]
+struct Wall;
+
+#[derive(Component)]
+struct Collider;
 
 #[derive(Component)]
 struct Velocity {
@@ -66,49 +72,78 @@ fn setup(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    ///////////creating an 8x8 tile background (centered at window origin)///////////
+    ///////////creating an 8x8 tile background (centered at window origin), with wall//////////
 
     let tile_sheet_handle = asset_server.load("tileProto.png");
     let tile_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
     let tile_layout_len = tile_layout.textures.len();
     let tile_layout_handle = texture_atlases.add(tile_layout);
 
+    let wall_sheet_handle = asset_server.load("wall.png");
+    let wall_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
+    let wall_layout_len = wall_layout.textures.len();
+    let wall_layout_handle = texture_atlases.add(wall_layout);
+
     commands.spawn(Camera2dBundle::default());
 
-    //starting point is x = -4 tiles, y = -4 tiles
-    let x_bound =  (4. * TILE_SIZE as f32) - (TILE_SIZE as f32) / 2.;
-    let y_bound = (4. * TILE_SIZE as f32) - (TILE_SIZE as f32) / 2.;
+    //starting point is x = -5 tiles, y = -5 tiles (to create an 8x8 room with an additional 1 tile wall)
+    let x_bound =  (5. * TILE_SIZE as f32) - (TILE_SIZE as f32) / 2.;
+    let y_bound = (5. * TILE_SIZE as f32) - (TILE_SIZE as f32) / 2.;
 
     let mut i = 0;
     let mut y:usize = 0;
     let mut t = Vec3::new(-x_bound, -y_bound, 0.);
     
-    //while 8 rows are not filled, apply a tile to each column in a row
-    while (y as f32)< (8 as f32) {
+    //while 10 rows are not filled, apply a tile to each column in a row
+    while (y as f32)< (9 as f32) {
         //if current row is filled, move to next row up
-        if (i == 8){
-            t += Vec3::new((-8.0 *TILE_SIZE as f32),  TILE_SIZE as f32, 0.); //changing the transform value
+        if (i == 10){
+            t += Vec3::new((-10.0 *TILE_SIZE as f32),  TILE_SIZE as f32, 0.); //changing the transform value
             i=0;
-            y+=1;
+            y+=1; 
         }
-        //while a row has less than 8 tiles, keep adding
-        while (i as f32) * (TILE_SIZE as f32) < 8.0*TILE_SIZE as f32 {
-            commands.spawn((
-                SpriteBundle {
-                    texture: tile_sheet_handle.clone(),
-                    transform: Transform {
-                        translation: t,
+        //while a row has less than 10 tiles, keep adding
+        while (i as f32) * (TILE_SIZE as f32) < 10.0*TILE_SIZE as f32 {
+            //determine if this tile should be a wall
+            let is_wall = y == 0 || y == 9 || i == 0 || i == 9;
+            //println!("spawning ({}, {}), {}", t.x, t.y, is_wall);
+
+            if is_wall { //add wall tile
+                commands.spawn((
+                    SpriteBundle {
+                        texture: wall_sheet_handle.clone(),
+                        transform: Transform {
+                            translation: t,
+                            ..default()
+                        },
                         ..default()
                     },
-                    ..default()
-                },
-                TextureAtlas {
-                    index: i % tile_layout_len,
-                    layout: tile_layout_handle.clone(),
-                },
-                Tile,
-            ))
-            .insert(Background);
+                    TextureAtlas {
+                        index: i % wall_layout_len,
+                        layout: wall_layout_handle.clone(),
+                    },
+                    Wall,
+                    Collider,
+                ))
+                .insert(Background);
+            } else { //add regular tile
+                commands.spawn((
+                    SpriteBundle {
+                        texture: tile_sheet_handle.clone(),
+                        transform: Transform {
+                            translation: t,
+                            ..default()
+                        },
+                        ..default()
+                    },
+                    TextureAtlas {
+                        index: i % tile_layout_len,
+                        layout: tile_layout_handle.clone(),
+                    },
+                    Tile,
+                ))
+                .insert(Background);
+            }
 
             i += 1;
             t += Vec3::new(TILE_SIZE as f32, 0., 0.);
@@ -139,6 +174,7 @@ fn setup(
 fn move_player(
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
+    wall_query: Query<&Transform, (With<Wall>, Without<Player>)>,
     mut player: Query<(&mut Transform, &mut Velocity), (With<Player>, Without<Background>)>,
 ) {
     let (mut pt, mut pv) = player.single_mut();
@@ -172,20 +208,42 @@ fn move_player(
         Vec2::splat(0.)
     };
     let change = pv.velocity * deltat;
-
     let new_pos = pt.translation + Vec3::new(change.x, 0., 0.);
+    
     if new_pos.x >= -(LEVEL_W / 2.) + (TILE_SIZE as f32) / 2.
         && new_pos.x <= LEVEL_W / 2. - (TILE_SIZE as f32) / 2.
     {
-        pt.translation = new_pos;
+        //check collision
+        if (!check_wall_collision(new_pos, &wall_query)){
+            pt.translation = new_pos;
+        }
     }
 
     let new_pos = pt.translation + Vec3::new(0., change.y, 0.);
     if new_pos.y >= -(LEVEL_H / 2.) + (TILE_SIZE as f32) / 2.
         && new_pos.y <= LEVEL_H / 2. - (TILE_SIZE as f32) / 2.
     {
-        pt.translation = new_pos;
+         //check collision
+         if (!check_wall_collision(new_pos, &wall_query)){
+            pt.translation = new_pos;
+        }
     }
+}
+
+fn check_wall_collision(
+    new_pos: Vec3,
+    collider_query: &Query<&Transform, (With<Wall>, Without<Player>)>,
+) -> bool {
+    for collider_transform in collider_query.iter() {
+        if new_pos.x + (TILE_SIZE as f32) / 2. > collider_transform.translation.x - (TILE_SIZE as f32) / 2.
+        && new_pos.x - (TILE_SIZE as f32) / 2. < collider_transform.translation.x + (TILE_SIZE as f32) / 2.
+        && new_pos.y - (TILE_SIZE as f32) / 2. < collider_transform.translation.y + (TILE_SIZE as f32) / 2.
+        && new_pos.y + (TILE_SIZE as f32) / 2. > collider_transform.translation.y - (TILE_SIZE as f32) / 2.
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 fn move_camera(
@@ -200,5 +258,3 @@ fn move_camera(
     ct.translation.x = pt.translation.x.clamp(-x_bound, x_bound);
     ct.translation.y = pt.translation.y.clamp(-y_bound, y_bound);
 }
-
-
