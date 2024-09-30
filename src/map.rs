@@ -1,23 +1,5 @@
-
-use bevy::{prelude::*, window::PresentMode};
-
-const TITLE: &str = "map";
-const WIN_W: f32 = 1280.;
-const WIN_H: f32 = 720.;
-
+use bevy::prelude::*;
 const TILE_SIZE: u32 = 144;
-
-const PLAYER_SPEED: f32 = 500.;
-const ACCEL_RATE: f32 = 5000.;
-
-const LEVEL_W: f32 = 1920.;
-const LEVEL_H: f32 = 1920.; // originally 1080 but made a little taller to see full room
-enum PlayerType {
-    Character,
-}
-
-#[derive(Component)]
-struct Player;
 
 #[derive(Component)]
 struct Tile;
@@ -25,49 +7,22 @@ struct Tile;
 #[derive(Component)]
 struct Background;
 
+
 #[derive(Component)]
 struct Wall;
 
 #[derive(Component)]
 struct Collider;
 
-#[derive(Component)]
-struct Velocity {
-    velocity: Vec2,
-}
-impl Velocity {
-    fn new() -> Self {
-        Self {
-            velocity: Vec2::splat(0.),
-        }
+pub struct MapPlugin;
+
+impl Plugin for MapPlugin{
+    fn build(&self, app: &mut App){
+        app.add_systems(Startup, create_room);
     }
 }
 
-impl From<Vec2> for Velocity {
-    fn from(velocity: Vec2) -> Self {
-        Self { velocity }
-    }
-}
-
-fn main() {
-    App::new()
-        .insert_resource(ClearColor(Color::Srgba(Srgba::gray(0.25))))
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: TITLE.into(),
-                resolution: (WIN_W, WIN_H).into(),
-                present_mode: PresentMode::Fifo,
-                ..default()
-            }),
-            ..default()
-        }))
-        .add_systems(Startup, setup)
-        .add_systems(Update, move_player)
-        .add_systems(Update, move_camera.after(move_player))
-        .run();
-}
-
-fn setup(
+fn create_room(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
@@ -149,6 +104,7 @@ fn setup(
             t += Vec3::new(TILE_SIZE as f32, 0., 0.);
         }
     }
+
     ///////////initializing player///////////
     let pc_sheet_handle = asset_server.load("characterProto.png");
     let pc_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
