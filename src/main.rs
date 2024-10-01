@@ -2,9 +2,11 @@ use bevy::{prelude::*, window::PresentMode};
 
 mod map;
 mod player;
+mod skill_tree;
 
 use map::MapPlugin;
 use player::PlayerPlugin;
+use skill_tree::SkillTreePlugin;
 
 const TITLE: &str = "main";
 const WIN_W: f32 = 1280.;
@@ -24,6 +26,7 @@ fn main(){
         }))
         .add_plugins(MapPlugin)
         .add_plugins(PlayerPlugin)
+        //.add_plugins(SkillTreePlugin) // uncomment this to see skill tree UI
         /*
             add other plugins here
         */
