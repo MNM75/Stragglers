@@ -1,5 +1,6 @@
     use bevy::prelude::*;
     use crate::map::Wall;
+    use crate::GameState;
     
     const TITLE: &str = "player";   
     const WIN_W: f32 = 1280.;
@@ -62,8 +63,8 @@
     impl Plugin for PlayerPlugin{
         fn build(&self, app: &mut App){
             app.add_systems(Startup, init_player)
-            .add_systems(Update, move_player)
-            .add_systems(Update, move_camera.after(move_player));
+            .add_systems(Update, move_player.run_if(in_state(GameState::InGame)))
+            .add_systems(Update, move_camera.after(move_player).run_if(in_state(GameState::InGame)));
         }
     
     }
