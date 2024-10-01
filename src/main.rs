@@ -12,6 +12,14 @@ const TITLE: &str = "main";
 const WIN_W: f32 = 1280.;
 const WIN_H: f32 = 720.;
 
+// Global states for the game
+#[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
+enum GameState {
+    #[default]
+    InGame,
+    SkillTreeMenu,
+}
+
 fn main(){
     App::new()
         .insert_resource(ClearColor(Color::Srgba(Srgba::gray(0.25))))
@@ -24,9 +32,10 @@ fn main(){
             }),
             ..default()
         }))
+        .init_state::<GameState>()
         .add_plugins(MapPlugin)
         .add_plugins(PlayerPlugin)
-        //.add_plugins(SkillTreePlugin) // uncomment this to see skill tree UI
+        .add_plugins(SkillTreePlugin)
         /*
             add other plugins here
         */
