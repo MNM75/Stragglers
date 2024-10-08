@@ -1,22 +1,24 @@
-use bevy::prelude::*;
-use crate::map::Wall;
-use crate::GameState;
-use crate::WIN_W;
-use crate::WIN_H; 
-
-const TILE_SIZE: u32 = 144;
-
-const PLAYER_SPEED: f32 = 500.;
-const ACCEL_RATE: f32 = 5000.;
-
-pub const LEVEL_W: f32 = 1920.;
-pub const LEVEL_H: f32 = 1920.;
-enum PlayerType {
-    Character,
-}
-
-#[derive(Component)]
-pub struct Player;
+    use bevy::prelude::*;
+    use crate::map::Wall;
+    use crate::GameState;
+    
+    const TITLE: &str = "player";   
+    const WIN_W: f32 = 1280.;
+    const WIN_H: f32 = 720.;
+    
+    const TILE_SIZE: u32 = 144;
+    
+    const PLAYER_SPEED: f32 = 500.;
+    const ACCEL_RATE: f32 = 5000.;
+    
+    const LEVEL_W: f32 = 1920.;
+    const LEVEL_H: f32 = 1920.;
+    enum PlayerType {
+        Character,
+    }
+    
+    #[derive(Component)]
+    struct Player;
 
 #[derive(Component)]
 struct Background;
