@@ -103,7 +103,7 @@ fn create_room(
         }
     }
 
-    const OFFSET: f32 = 500.0; // Change this value to raise/lower the hallway
+    const OFFSET: f32 = 576.0; // Change this value to raise/lower the hallway
 
     // Start the hallway at the opening position (y = 4), raise it higher
     let hallway_start_position = Vec3::new(
@@ -127,29 +127,42 @@ fn create_hallway(
     start_position: Vec3,
 ) {
     let hallway_length = 10; // Length of the hallway
+    const HALLWAY_ROWS: usize = 2; // Number of rows
+    const HALLWAY_COLUMNS: usize = 10; // Number of columns
     let mut t = start_position;
 
     // Load tile texture
-    let tile_sheet_handle = asset_server.load("tileProto.png");
+    let tile_sheet_handle: Handle<Image> = asset_server.load("tileProto.png");
     let tile_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
     let tile_layout_handle = texture_atlases.add(tile_layout);
 
-    for _ in 0..hallway_length {
-        commands.spawn((
-            SpriteBundle {
-                texture: tile_sheet_handle.clone(),
-                transform: Transform {
-                    translation: t,
+    // Load wall texture
+    let wall_sheet_handle: Handle<Image> = asset_server.load("wall.png");
+    let wall_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
+    let wall_layout_len = wall_layout.textures.len();
+    let wall_layout_handle = texture_atlases.add(wall_layout);
+
+    for row in 0..HALLWAY_ROWS {
+        for column in 0..HALLWAY_COLUMNS {
+            commands.spawn((
+                SpriteBundle {
+                    texture: tile_sheet_handle.clone(),
+                    transform: Transform {
+                        translation: t,
+                        ..default()
+                    },
                     ..default()
                 },
-                ..default()
-            },
-            TextureAtlas {
-                index: 0, // You can change this based on your tile layout
-                layout: tile_layout_handle.clone(),
-            },
-            Tile,
-        ));
-        t += Vec3::new(TILE_SIZE as f32, 0.0, 0.0); // Move to the right for the next tile
+                TextureAtlas {
+                    index: 0, // You can change this based on your tile layout
+                    layout: tile_layout_handle.clone(),
+                },
+                Tile,
+            ));
+            t += Vec3::new(TILE_SIZE as f32, 0.0, 0.0); // Move to the right for the next tile
+        }
+        // After finishing a row, reset the translation and move down
+        t.x = start_position.x; // Reset x to the starting x position
+        t.y -= TILE_SIZE as f32; // Move down for the next row
     }
 }
