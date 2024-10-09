@@ -9,8 +9,8 @@
     const PLAYER_SPEED: f32 = 500.;
     const ACCEL_RATE: f32 = 5000.;
     
-    pub const LEVEL_W: f32 = 1920.;
-    pub const LEVEL_H: f32 = 1920.;
+   pub const LEVEL_W: f32 = 8000.;
+   pub const LEVEL_H: f32 = 1920.;
     enum PlayerType {
         Character,
     }
