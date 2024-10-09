@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use rand::prelude::*;
 const TILE_SIZE: u32 = 144;
 
 #[derive(Component)]
@@ -25,8 +26,8 @@ fn create_room(
 ) {
      ///////////creating an 8x8 tile background (centered at window origin), with wall//////////
     
-    let tile_sheet_handle = asset_server.load("tileProto.png");
-    let tile_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
+    let tile_sheet_handle = asset_server.load("mossTiles.png");
+    let tile_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 2, 2, None, None);
     let tile_layout_len = tile_layout.textures.len();
     let tile_layout_handle = texture_atlases.add(tile_layout);
 
@@ -80,6 +81,7 @@ fn create_room(
                     .insert(Background);
             } else {
                 // add regular tile
+                let rand: usize = random();
                 commands
                     .spawn((
                         SpriteBundle {
@@ -91,7 +93,7 @@ fn create_room(
                             ..default()
                         },
                         TextureAtlas {
-                            index: i % tile_layout_len,
+                            index: rand % tile_layout_len,
                             layout: tile_layout_handle.clone(),
                         },
                         Tile,
@@ -155,8 +157,9 @@ fn create_hallway(
     let mut t = start_position;
 
     // load tile texture
-    let tile_sheet_handle: Handle<Image> = asset_server.load("tileProto.png");
-    let tile_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
+    let tile_sheet_handle: Handle<Image> = asset_server.load("mossTiles.png");
+    let tile_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 2, 2, None, None);
+    let tile_layout_len = tile_layout.textures.len();
     let tile_layout_handle = texture_atlases.add(tile_layout);
 
     // load wall texture
@@ -164,6 +167,7 @@ fn create_hallway(
     let wall_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
     let wall_layout_handle = texture_atlases.add(wall_layout);
 
+    
     for row in 0..HALLWAY_ROWS {
         for column in 0..HALLWAY_COLUMNS {
             if row == 0 || row == HALLWAY_ROWS - 1 {
@@ -185,6 +189,7 @@ fn create_hallway(
                 ));
             } else {
                 // inner rows are tiles
+                let rand: usize = random();
                 commands.spawn((
                     SpriteBundle {
                         texture: tile_sheet_handle.clone(),
@@ -195,7 +200,7 @@ fn create_hallway(
                         ..default()
                     },
                     TextureAtlas {
-                        index: 0, // tile texture index
+                        index: rand % tile_layout_len, // tile texture index
                         layout: tile_layout_handle.clone(),
                     },
                     Tile,
@@ -219,8 +224,8 @@ fn create_second_room(
     start_position: Vec3,
 ) {
     // load textures and create texture atlases
-    let tile_sheet_handle = asset_server.load("tileProto.png");
-    let tile_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
+    let tile_sheet_handle = asset_server.load("mossTiles.png");
+    let tile_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 2, 2, None, None);
     let tile_layout_len = tile_layout.textures.len();
     let tile_layout_handle = texture_atlases.add(tile_layout);
 
@@ -250,6 +255,7 @@ fn create_second_room(
 
             if is_wall {
                 // add wall tile
+                let rand: usize = random();
                 commands
                     .spawn(( 
                         SpriteBundle {
@@ -269,6 +275,7 @@ fn create_second_room(
                     .insert(Background);
             } else {
                 // add regular tile
+                let rand: usize = random();
                 commands
                     .spawn(( 
                         SpriteBundle {
@@ -280,7 +287,7 @@ fn create_second_room(
                             ..default()
                         },
                         TextureAtlas {
-                            index: i % tile_layout_len,
+                            index: rand % tile_layout_len,
                             layout: tile_layout_handle.clone(),
                         },
                         Tile,

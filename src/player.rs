@@ -11,12 +11,20 @@
     
    pub const LEVEL_W: f32 = 8000.;
    pub const LEVEL_H: f32 = 1920.;
+
+   const ANIM_TIME: f32 = 0.2;
     enum PlayerType {
         Character,
     }
     
     #[derive(Component)]
     pub struct Player;
+
+    #[derive(Component, Deref, DerefMut)]
+struct AnimationTimer(Timer);
+
+#[derive(Component, Deref, DerefMut)]
+struct AnimationFrameCount(usize);
 
     #[derive(Component)]
     struct Background;
@@ -62,6 +70,7 @@
         fn build(&self, app: &mut App){
             app.add_systems(Startup, init_player)
             .add_systems(Update, move_player.run_if(in_state(GameState::InGame)))
+            .add_systems(Update, animate_player.after(move_player))
             .add_systems(Update, move_camera.after(move_player).run_if(in_state(GameState::InGame)));
         }
     
@@ -73,8 +82,9 @@
         mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     ) {
         ///////////initializing player///////////
-        let pc_sheet_handle = asset_server.load("characterProto.png");
-        let pc_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
+        let pc_sheet_handle = asset_server.load("L_Animation.png");
+        let pc_layout = TextureAtlasLayout::from_grid(UVec2::new(82, 144), 4, 4, None, None);
+        let pc_layout_len = pc_layout.textures.len();
         let pc_layout_handle = texture_atlases.add(pc_layout);
         commands.spawn((
             SpriteBundle {
@@ -86,39 +96,73 @@
                 ..default()
             },
             TextureAtlas {
-                layout: pc_layout_handle.clone(),
-                index: PlayerType::Character as usize,
+                layout: pc_layout_handle,
+                index: 8,
             },
+            AnimationTimer(Timer::from_seconds(ANIM_TIME, TimerMode::Repeating)),
+            AnimationFrameCount(4),
             Velocity::new(),
             Player,
         ));
     
     }
+    fn animate_player(
+        time: Res<Time>,
+        
+        mut player: Query<
+            (
+                &Velocity,
+                &mut TextureAtlas,
+                &mut AnimationTimer,
+                &AnimationFrameCount,
+            ),
+            With<Player>,
+        >,
+    ) {
+        
+        let (v, mut texture_atlas, mut timer, frame_count) = player.single_mut();
+        let mut counter: usize = 0;
+        if v.velocity.cmpne(Vec2::ZERO).any() {
+            timer.tick(time.delta());
     
+            if timer.just_finished() {
+            counter = counter +1;
+            texture_atlas.index = (texture_atlas.index + counter) % **frame_count;
+            }
+        }
+    }
     fn move_player(
         time: Res<Time>,
         input: Res<ButtonInput<KeyCode>>,
+        //mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
         wall_query: Query<&Transform, (With<Wall>, Without<Player>)>,
-        mut player: Query<(&mut Transform, &mut Velocity), (With<Player>, Without<Background>)>,
+        mut player: Query<(&mut Transform, &mut Velocity, &mut TextureAtlas), (With<Player>, Without<Background>)>,
     ) {
-        let (mut pt, mut pv) = player.single_mut();
+        let (mut pt, mut pv, mut texture_atlas) = player.single_mut();
     
         let mut deltav = Vec2::splat(0.);
+        //if input.just_pressed(KeyCode::KeyA){
+           // texture_atlas.index = 4;
+        //}
     
         if input.pressed(KeyCode::KeyA) {
             deltav.x -= 1.;
+            texture_atlas.index = 4;
         }
     
         if input.pressed(KeyCode::KeyD) {
             deltav.x += 1.;
+            //texture_atlas.index = 0;
         }
     
         if input.pressed(KeyCode::KeyW) {
             deltav.y += 1.;
+            texture_atlas.index = 12;
         }
     
         if input.pressed(KeyCode::KeyS) {
             deltav.y -= 1.;
+            texture_atlas.index = 8;
         }
     
         let deltat = time.delta_seconds();
