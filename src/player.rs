@@ -1,10 +1,8 @@
 use bevy::prelude::*;
 use crate::map::Wall;
 use crate::GameState;
-
-const TITLE: &str = "player";   
-const WIN_W: f32 = 1280.;
-const WIN_H: f32 = 720.;
+use crate::WIN_W;
+use crate::WIN_H; 
 
 const TILE_SIZE: u32 = 144;
 
