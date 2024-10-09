@@ -1,67 +1,66 @@
-    use bevy::prelude::*;
-    use crate::map::Wall;
-    use crate::GameState;
-    use crate::WIN_W;
-    use crate::WIN_H; 
-    
-    const TILE_SIZE: u32 = 144;
-    
-    const PLAYER_SPEED: f32 = 500.;
-    const ACCEL_RATE: f32 = 5000.;
-    
-   pub const LEVEL_W: f32 = 8000.;
-   pub const LEVEL_H: f32 = 1920.;
+use bevy::prelude::*;
+use crate::map::Wall;
+use crate::GameState;
+use crate::WIN_W;
+use crate::WIN_H; 
 
-   const ANIM_TIME: f32 = 0.2;
-    enum PlayerType {
-        Character,
-    }
-    
-    #[derive(Component)]
-    pub struct Player;
+const TILE_SIZE: u32 = 144;
 
-    #[derive(Component, Deref, DerefMut)]
+const PLAYER_SPEED: f32 = 500.;
+const ACCEL_RATE: f32 = 5000.;
+
+pub const LEVEL_W: f32 = 8000.;
+pub const LEVEL_H: f32 = 1920.;
+
+const ANIM_TIME: f32 = 0.2;
+enum PlayerType {
+    Character,
+}
+
+#[derive(Component)]
+pub struct Player;
+
+#[derive(Component, Deref, DerefMut)]
 struct AnimationTimer(Timer);
 
 #[derive(Component, Deref, DerefMut)]
 struct AnimationFrameCount(usize);
 
-    #[derive(Component)]
-    struct Background;
+#[derive(Component)]
+struct Background;
 
-    pub struct Sides {
-        top: f32,
-        bottom: f32,
-        left: f32,
-        right: f32,
-    }
-    impl From<Vec3> for Sides {
-        fn from(pos: Vec3) -> Self {
-            Self {
-                top: pos.y + (TILE_SIZE as f32) / 2.,
-                bottom: pos.y - (TILE_SIZE as f32) / 2.,
-                left: pos.x - (TILE_SIZE as f32) / 2.,
-                right: pos.x + (TILE_SIZE as f32) / 2.,
-            }
+pub struct Sides {
+    top: f32,
+    bottom: f32,
+    left: f32,
+    right: f32,
+}
+impl From<Vec3> for Sides {
+    fn from(pos: Vec3) -> Self {
+        Self {
+            top: pos.y + (TILE_SIZE as f32) / 2.,
+            bottom: pos.y - (TILE_SIZE as f32) / 2.,
+            left: pos.x - (TILE_SIZE as f32) / 2.,
+            right: pos.x + (TILE_SIZE as f32) / 2.,
         }
     }
-    
-    #[derive(Component)]
-    struct Velocity {
-        velocity: Vec2,
-    }
-    impl Velocity {
-        fn new() -> Self {
-            Self {
-                velocity: Vec2::splat(0.),
-            }
+}
+
+#[derive(Component)]
+struct Velocity {
+    velocity: Vec2,
+}
+impl Velocity {
+    fn new() -> Self {
+        Self {
+            velocity: Vec2::splat(0.),
         }
     }
-    
-    impl From<Vec2> for Velocity {
-        fn from(velocity: Vec2) -> Self {
-            Self { velocity }
-        }
+}
+
+impl From<Vec2> for Velocity {
+    fn from(velocity: Vec2) -> Self {
+        Self { velocity }
     }
     
     pub struct PlayerPlugin;
@@ -187,41 +186,42 @@ struct AnimationFrameCount(usize);
                 pt.translation = new_pos;
             }
         }
-    
-        let new_pos = pt.translation + Vec3::new(0., change.y, 0.);
-        if new_pos.y >= -(LEVEL_H / 2.) + (TILE_SIZE as f32) / 2.
-            && new_pos.y <= LEVEL_H / 2. - (TILE_SIZE as f32) / 2.
-        {
-             //check collision
-             if !check_wall_collision(new_pos, &wall_query){
-                pt.translation = new_pos;
-            }
+    }
+
+    let new_pos = pt.translation + Vec3::new(0., change.y, 0.);
+    if new_pos.y >= -(LEVEL_H / 2.) + (TILE_SIZE as f32) / 2.
+        && new_pos.y <= LEVEL_H / 2. - (TILE_SIZE as f32) / 2.
+    {
+         //check collision
+         if !check_wall_collision(new_pos, &wall_query){
+            pt.translation = new_pos;
         }
     }
-    
-    fn check_wall_collision(
-        new_pos: Vec3,
-        collider_query: &Query<&Transform, (With<Wall>, Without<Player>)>,
-    ) -> bool {
-        for collider_transform in collider_query.iter() {
-            let a: Sides = new_pos.into();
-            let b: Sides = collider_transform.translation.into();
-            if a.bottom <= b.top && a.top >= b.bottom && a.right >= b.left && a.left <= b.right {
-                return true
-            }
+}
+
+fn check_wall_collision(
+    new_pos: Vec3,
+    collider_query: &Query<&Transform, (With<Wall>, Without<Player>)>,
+) -> bool {
+    for collider_transform in collider_query.iter() {
+        let a: Sides = new_pos.into();
+        let b: Sides = collider_transform.translation.into();
+        if a.bottom <= b.top && a.top >= b.bottom && a.right >= b.left && a.left <= b.right {
+            return true
         }
-        return false;
     }
-    
-    fn move_camera(
-        player: Query<&Transform, With<Player>>,
-        mut camera: Query<&mut Transform, (Without<Player>, With<Camera>)>,
-    ) {
-        let pt = player.single();
-        let mut ct = camera.single_mut();
-    
-        let x_bound = LEVEL_W / 2. - WIN_W / 2.;
-        let y_bound = LEVEL_H / 2. - WIN_H / 2.;
-        ct.translation.x = pt.translation.x.clamp(-x_bound, x_bound);
-        ct.translation.y = pt.translation.y.clamp(-y_bound, y_bound);
-    }    
+    return false;
+}
+
+fn move_camera(
+    player: Query<&Transform, With<Player>>,
+    mut camera: Query<&mut Transform, (Without<Player>, With<Camera>)>,
+) {
+    let pt = player.single();
+    let mut ct = camera.single_mut();
+
+    let x_bound = LEVEL_W / 2. - WIN_W / 2.;
+    let y_bound = LEVEL_H / 2. - WIN_H / 2.;
+    ct.translation.x = pt.translation.x.clamp(-x_bound, x_bound);
+    ct.translation.y = pt.translation.y.clamp(-y_bound, y_bound);
+}    
