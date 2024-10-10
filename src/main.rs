@@ -6,7 +6,7 @@ mod skill_tree;
 
 use map::MapPlugin;
 use player::PlayerPlugin;
-use skill_tree::SkillTreePlugin;
+use crate::skill_tree::SkillTreePlugin;
 
 const TITLE: &str = "main";
 const WIN_W: f32 = 1280.;

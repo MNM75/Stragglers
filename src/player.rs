@@ -2,8 +2,8 @@
     use crate::map::Wall;
     use crate::GameState;
     use crate::WIN_W;
-    use crate::WIN_H; 
-    
+    use crate::WIN_H;
+ 
     const TILE_SIZE: u32 = 144;
     
     const PLAYER_SPEED: f32 = 500.;
@@ -55,7 +55,40 @@
             Self { velocity }
         }
     }
-    
+
+    #[derive(Component)]
+    pub struct PlayerStats {
+        pub attack: u32,
+        pub magic: u32,
+        pub speed: u32,
+        pub max_hp: u32,
+        pub hp: u32,
+        pub skill_points: u32,
+        pub ability_points: u32,
+    }
+
+    impl PlayerStats {
+        pub fn new() -> Self {
+            Self {
+                attack: 1,
+                magic: 1,
+                speed: 1,
+                max_hp: 10,
+                hp: 1,
+                skill_points: 0,
+                ability_points: 8,
+            }
+        }
+
+        pub fn calculate_max_hp(&self) -> u32 {
+            self.hp * 10  // Example: Each point in health adds 10 to max HP
+        }
+
+        pub fn update_max_hp(&mut self) {
+            self.max_hp = self.calculate_max_hp();
+        }        
+    }
+
     pub struct PlayerPlugin;
     
     impl Plugin for PlayerPlugin{
@@ -76,6 +109,7 @@
         let pc_sheet_handle = asset_server.load("characterProto.png");
         let pc_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
         let pc_layout_handle = texture_atlases.add(pc_layout);
+
         commands.spawn((
             SpriteBundle {
                 texture: pc_sheet_handle,
@@ -91,6 +125,7 @@
             },
             Velocity::new(),
             Player,
+            PlayerStats::new(),
         ));
     
     }
