@@ -1,0 +1,105 @@
+[33m6f322ce[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m made hallway more symetric
+[33mecfe620[m made hallway more symetric
+[33me6a5689[m working on hallway and second room
+[33mf8fb781[m Merge pull request #26 from zhangsally/main
+[33mf235fd1[m skill tree UI appears on keypress 'Q' and hides when pressed again. note: UI background asset not aligned with center of camera frame
+[33m2920c8a[m Merge pull request #25 from zhangsally/main
+[33me25b385[m comment out skill tree plugin so running main defaults to the overworld
+[33mfaff63b[m minor code cleanup
+[33m7667468[m hardcoded stats for skill tree UI
+[33m6ebf7dc[m Merge pull request #24 from MNM75/fixed-collision
+[33m7c54baf[m Cleaned collision code and general code
+[33m3ec68ea[m fixed merge
+[33md2ffb4b[m Merge pull request #23 from MNM75/Map-Patch-1
+[33m86d3325[m Merge branch 'main' into Map-Patch-1
+[33mec067d4[m Merge pull request #22 from Le-0Liang/main
+[33m8ce242e[m Added wall and collisions for initial room
+[33m5e3d23e[m - Created a main.rs for integrating all plugins in the future
+[33m4e3ad52[m - Created a main.rs for integrating all plugins in the future
+[33m996fec9[m Merge pull request #21 from helenf1723/main
+[33mfc1a5aa[m Delete assets/t
+[33m11e117a[m Add files via upload
+[33m44001a6[m Create t
+[33mb00fb0b[m Delete assets
+[33m3f0d2aa[m Create assets
+[33m2dfd02e[m Create lib.rs
+[33m36e3e49[m Update map.rs
+[33m0921633[m Rename tileProto2.png to tileProto.png
+[33m7036643[m Rename guy.png to characterProto.png
+[33m4ca6f6d[m Add files via upload
+[33mdfbe705[m Delete images/Tile_144x144 (1).png
+[33mc748ffe[m Add files via upload
+[33m3fc5e26[m Delete images/guy.png
+[33m2cf3971[m Delete images/protoTile_144x144.png
+[33m64a0eab[m Add files via upload
+[33m1c51943[m Create Cargo.toml
+[33m1a95cc3[m Create map.rs
+[33m6609f40[m Merge branch 'MNM75:main' into main
+[33m0ef5a75[m Rename Leo_Liang.png to Leo Liang.png
+[33m9a059ab[m Merge pull request #20 from Le-0Liang/main
+[33m738e0b0[m Delete end_credits/assets/Leo Liang.png
+[33m8bf1647[m Add files via upload
+[33mb720025[m Merge pull request #19 from ukattah/main
+[33m1451458[m Add files via upload
+[33m4657637[m Merge branch 'MNM75:main' into main
+[33m4382106[m Merge pull request #18 from zhangsally/main
+[33m0a44940[m ability score clarification
+[33m03fcb04[m Merge pull request #15 from MNM75/Farnan-Verbal-Feedback
+[33mb43c4f3[m Merge pull request #17 from zhangsally/main
+[33ma41fe84[m all assets spawned and cycled through
+[33m660936e[m spawn more assets during setup for end credits (7/8 images)
+[33m13646e2[m Merge pull request #16 from Le-0Liang/main
+[33me2bb664[m Add files via upload
+[33m7e8287a[m Merge pull request #14 from ukattah/main
+[33m0e0f071[m Add files via upload
+[33m4ead436[m Farnan Verbal Feedback Changes
+[33m829a370[m Merge branch 'MNM75:main' into main
+[33m0647b8c[m Merge pull request #13 from TwilightGnome/main
+[33mfc33f8e[m Merge pull request #11 from MNM75/MNM75-patch-4
+[33mc3d0d59[m Add files via upload
+[33mbb33bab[m Main changed image to png
+[33m934deb8[m Merge pull request #12 from zhangsally/main
+[33mb991052[m Delete end_credits/assets/littleguy2.png
+[33m7b08388[m Delete end_credits/assets/littleguy-nobackground.png
+[33md9efb56[m Put my name on it
+[33m1ba4083[m minor file maintenance & update the end_credits.rs setup function to spawn more assets
+[33mb36b178[m Merge pull request #10 from TwilightGnome/main
+[33m63fad79[m Add files via upload
+[33mc30fde3[m Add files via upload
+[33m9936970[m Main Added image to end credits
+[33mfe809e3[m Add files via upload
+[33me0a4dcb[m Merge branch 'MNM75:main' into main
+[33m1fe38ac[m Merge pull request #9 from MNM75/MNM75-patch-3
+[33mf0daf5a[m Fixed image
+[33m7d3289d[m Merge branch 'MNM75:main' into main
+[33mbac214f[m Add files via upload
+[33m7257f88[m Merge pull request #8 from MNM75/Miko-Image-Asset
+[33m45cb33e[m Add files via upload
+[33m6236800[m Fixed image link
+[33md03ee5d[m Merge pull request #7 from MNM75/MNM75-patch-2
+[33m8ebf294[m Updated image
+[33m99afa8e[m Add files via upload
+[33m88b18da[m Sally's suggestions
+[33m3118a09[m Merge pull request #6 from racheljayi/main
+[33m8d011db[m Update README.md
+[33m6c291d9[m Add files via upload
+[33mfb513c1[m Update README.md
+[33m170dabc[m Fixes for Proposal
+[33m2e258f5[m Add files via upload
+[33m063fb22[m Merge pull request #5 from zhangsally/main
+[33m0391f82[m readme image path fix
+[33md68529e[m Merge pull request #3 from zhangsally/main
+[33m2d6458d[m added gitignore & added comment to end credits
+[33m8473fbc[m Merge pull request #2 from zhangsally/main
+[33m7464bb8[m edited project space; added first image/asset; running the credits program will display the static image
+[33mf3c4f33[m add assets folder & create blank file for credits
+[33m3b82415[m undo last commit
+[33m5fc47d1[m add assets folder & create blank end credits file
+[33md9b9ce9[m Edited goals table
+[33me01960f[m switched position of text
+[33m0203b4f[m Update README.md
+[33md3ad45a[m Merge pull request #1 from MNM75/MNM75-patch-1
+[33m80c00eb[m Update README.md
+[33m255db0a[m Add files via upload
+[33m536f7d2[m Update README.md
+[33mfd5a40a[m Initial commit
