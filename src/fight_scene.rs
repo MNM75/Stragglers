@@ -39,8 +39,7 @@ impl Plugin for FightScenePlugin {
 fn toggle_battle_scene(
     state: Res<State<GameState>>,
     mut next_state: ResMut<NextState<GameState>>,
-    input: Res<ButtonInput<KeyCode>>,
-) {
+    input: Res<ButtonInput<KeyCode>>,) {
         if input.just_pressed(KeyCode::KeyP) {
             match state.get() {
                 GameState::InGame => next_state.set(GameState::BattleMode),
