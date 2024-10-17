@@ -1,9 +1,11 @@
 use bevy::{prelude::*, window::PresentMode};
 
+mod fight_scene;
 mod map;
 mod player;
 mod skill_tree;
 
+use fight_scene::FightScenePlugin;
 use map::MapPlugin;
 use player::PlayerPlugin;
 use skill_tree::SkillTreePlugin;
@@ -18,9 +20,10 @@ enum GameState {
     #[default]
     InGame,
     SkillTreeMenu,
+    BattleMode,
 }
 
-fn main(){
+fn main() {
     App::new()
         .insert_resource(ClearColor(Color::Srgba(Srgba::gray(0.25))))
         .add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -36,10 +39,9 @@ fn main(){
         .add_plugins(MapPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(SkillTreePlugin)
+        .add_plugins(FightScenePlugin)
         /*
             add other plugins here
         */
         .run();
-
 }
-

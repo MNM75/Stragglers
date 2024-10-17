@@ -5,6 +5,14 @@ use bevy::{
 
 use crate::GameState;
 
+use crate::player::Player;
+use crate::WIN_W;
+use crate::WIN_H;
+use crate::player::LEVEL_W;
+use crate::player::LEVEL_H;
+
+#[derive(Component)]
+struct SkillTreeUIBackground;
 #[derive(Component)]
 struct SkillTreeUIComponent;
 
@@ -51,6 +59,7 @@ fn load_skill_tree_ui(
 ) {
     // bring in asset for skill tree ui
     commands.spawn((
+        SkillTreeUIBackground,
         SkillTreeUIComponent,
         SpriteBundle {
         texture: asset_server.load("skillTreeUI.png"),
@@ -283,14 +292,32 @@ fn load_skill_tree_ui(
     ));
 }
 
-fn show_skill_tree_ui(mut commands: Commands, query: Query<Entity, With<SkillTreeUIComponent>>) {
+fn show_skill_tree_ui(
+    mut commands: Commands,
+    query: Query<Entity, With<SkillTreeUIComponent>>,
+    mut background: Query<&mut Transform, With<SkillTreeUIBackground>>,
+    player: Query<&Transform, (With<Player>, Without<SkillTreeUIBackground>)>,) // an &Transform with <Player> would not have <SkillTreeUIBackground> applied by user logic, but the Without<T> is included to not cause a panic and crash the game
+{
+    // makes the skill tree UI visible
     for entity in query.iter() {
         commands.entity(entity).insert(Visibility::Visible);
     }
-    
+
+    // centers the skill tree on the center of the screen (based on player location)
+    let pt = player.single();
+    let mut bt = background.single_mut();
+    let x_bound = LEVEL_W / 2. - WIN_W / 2.;
+    let y_bound = LEVEL_H / 2. - WIN_H / 2.;
+
+    bt.translation.x = pt.translation.x.clamp(-x_bound, x_bound);   // same logic as camera/player movement
+    bt.translation.y = pt.translation.y.clamp(-y_bound, y_bound);   // same logic as camera/player movement
+    bt.translation.z = pt.translation.z + 1.;
 }
 
-fn hide_skill_tree_ui(mut commands: Commands, query: Query<Entity, With<SkillTreeUIComponent>>) {
+fn hide_skill_tree_ui(
+    mut commands: Commands,
+    query: Query<Entity, With<SkillTreeUIComponent>>)
+{
     for entity in query.iter() {
         commands.entity(entity).insert(Visibility::Hidden);
     }
@@ -304,6 +331,7 @@ fn toggle_skill_tree_ui(
             match state.get() {
                 GameState::InGame => next_state.set(GameState::SkillTreeMenu),
                 GameState::SkillTreeMenu => next_state.set(GameState::InGame),
+                GameState::BattleMode => next_state.set(GameState::SkillTreeMenu),
             }
         }
 }
