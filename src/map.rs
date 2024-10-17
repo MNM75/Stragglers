@@ -24,8 +24,8 @@ fn create_room(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-     ///////////creating an 8x8 tile background (centered at window origin), with wall//////////
-    
+    ///////////creating an 8x8 tile background (centered at window origin), with wall//////////
+
     let tile_sheet_handle = asset_server.load("mossTiles.png");
     let tile_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 2, 2, None, None);
     let tile_layout_len = tile_layout.textures.len();
@@ -38,7 +38,7 @@ fn create_room(
 
     commands.spawn((Camera2dBundle::default(),));
 
-     //starting point is x = -5 tiles, y = -5 tiles (to create an 8x8 room with an additional 1 tile wall)
+    //starting point is x = -5 tiles, y = -5 tiles (to create an 8x8 room with an additional 1 tile wall)
     let x_bound = (5. * TILE_SIZE as f32) - (TILE_SIZE as f32) / 2.;
     let y_bound = (5. * TILE_SIZE as f32) - (TILE_SIZE as f32) / 2.;
 
@@ -46,10 +46,10 @@ fn create_room(
     let mut y: usize = 0;
     let mut t = Vec3::new(-x_bound, -y_bound, 0.);
 
-     //while 10 rows are not filled, apply a tile to each column in a row
-     while (y as f32) < (9 as f32) {
-         //if current row is filled, move to next row up
-         if i == 10 {
+    //while 10 rows are not filled, apply a tile to each column in a row
+    while (y as f32) < (9 as f32) {
+        //if current row is filled, move to next row up
+        if i == 10 {
             t += Vec3::new(-10.0 * TILE_SIZE as f32, TILE_SIZE as f32, 0.); // Changing the transform value
             i = 0;
             y += 1;
@@ -57,8 +57,8 @@ fn create_room(
 
         // while a row has less than 10 tiles, keep adding
         while (i as f32) * (TILE_SIZE as f32) < 10.0 * TILE_SIZE as f32 {
-             //determine if this tile should be a wall
-             let is_wall = y == 0 || y == 9 || i == 0 || (i == 9 && y != 4 && y != 5); // opening in the right wall at y == 4 and y == 5
+            //determine if this tile should be a wall
+            let is_wall = y == 0 || y == 9 || i == 0 || (i == 9 && y != 4 && y != 5); // opening in the right wall at y == 4 and y == 5
 
             if is_wall {
                 // add wall tile
@@ -108,7 +108,6 @@ fn create_room(
 
     const OFFSET: f32 = 720.0; // change this value to raise/lower the hallway
 
-   
     // create the hallway and get the end position
     let hallway_start_position = Vec3::new(
         (5.0 * TILE_SIZE as f32) + TILE_SIZE as f32 / 2.0,
@@ -125,8 +124,8 @@ fn create_room(
 
     // spawn second room to the right of the hallway
     let second_room_start_position = Vec3::new(
-        end_of_hallway.x, // the end of the hallway
-        end_of_hallway.y -288.0, // adjust the y value to match the hallway exit
+        end_of_hallway.x,         // the end of the hallway
+        end_of_hallway.y - 288.0, // adjust the y value to match the hallway exit
         0.0,
     );
 
@@ -138,7 +137,7 @@ fn create_room(
         second_room_start_position,
     );
 
-   /*  create_second_room(
+    /*  create_second_room(
         &mut commands,
         &asset_server,
         &mut texture_atlases,
@@ -167,7 +166,6 @@ fn create_hallway(
     let wall_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
     let wall_layout_handle = texture_atlases.add(wall_layout);
 
-    
     for row in 0..HALLWAY_ROWS {
         for column in 0..HALLWAY_COLUMNS {
             if row == 0 || row == HALLWAY_ROWS - 1 {
@@ -213,14 +211,18 @@ fn create_hallway(
         t.y -= TILE_SIZE as f32; // move down for the next row
     }
 
-    Vec3::new(start_position.x + (HALLWAY_COLUMNS as f32 * TILE_SIZE as f32), t.y, 0.0)
+    Vec3::new(
+        start_position.x + (HALLWAY_COLUMNS as f32 * TILE_SIZE as f32),
+        t.y,
+        0.0,
+    )
 }
 
-// second room that opens on the left side to connect the hallway, similar to the first room 
+// second room that opens on the left side to connect the hallway, similar to the first room
 fn create_second_room(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
-    texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>, 
+    texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
     start_position: Vec3,
 ) {
     // load textures and create texture atlases
@@ -257,7 +259,7 @@ fn create_second_room(
                 // add wall tile
                 let rand: usize = random();
                 commands
-                    .spawn(( 
+                    .spawn((
                         SpriteBundle {
                             texture: wall_sheet_handle.clone(),
                             transform: Transform {
@@ -277,7 +279,7 @@ fn create_second_room(
                 // add regular tile
                 let rand: usize = random();
                 commands
-                    .spawn(( 
+                    .spawn((
                         SpriteBundle {
                             texture: tile_sheet_handle.clone(),
                             transform: Transform {
