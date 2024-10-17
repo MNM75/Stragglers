@@ -91,6 +91,7 @@ fn init_player(
     let pc_layout = TextureAtlasLayout::from_grid(UVec2::new(82, 144), 4, 4, None, None);
     let pc_layout_len = pc_layout.textures.len();
     let pc_layout_handle = texture_atlases.add(pc_layout);
+
     commands.spawn((
         SpriteBundle {
             texture: pc_sheet_handle,
@@ -110,10 +111,9 @@ fn init_player(
         Player,
     ));
 }
-
 fn animate_player(
     time: Res<Time>,
-
+    input: Res<ButtonInput<KeyCode>>,
     mut player: Query<
         (
             &Velocity,
@@ -125,13 +125,12 @@ fn animate_player(
     >,
 ) {
     let (v, mut texture_atlas, mut timer, frame_count) = player.single_mut();
-    let mut counter: usize = 0;
+
     if v.velocity.cmpne(Vec2::ZERO).any() {
         timer.tick(time.delta());
 
         if timer.just_finished() {
-            counter = counter + 1;
-            texture_atlas.index = (texture_atlas.index + counter) % **frame_count;
+            texture_atlas.index = (texture_atlas.index + 1) % frame_count.0; // Access the inner usize
         }
     }
 }
@@ -149,28 +148,21 @@ fn move_player(
     let (mut pt, mut pv, mut texture_atlas) = player.single_mut();
 
     let mut deltav = Vec2::splat(0.);
-    //if input.just_pressed(KeyCode::KeyA){
-    // texture_atlas.index = 4;
-    //}
 
     if input.pressed(KeyCode::KeyA) {
         deltav.x -= 1.;
-        texture_atlas.index = 4;
     }
 
     if input.pressed(KeyCode::KeyD) {
         deltav.x += 1.;
-        //texture_atlas.index = 0;
     }
 
     if input.pressed(KeyCode::KeyW) {
         deltav.y += 1.;
-        texture_atlas.index = 12;
     }
 
     if input.pressed(KeyCode::KeyS) {
         deltav.y -= 1.;
-        texture_atlas.index = 8;
     }
 
     let deltat = time.delta_seconds();
