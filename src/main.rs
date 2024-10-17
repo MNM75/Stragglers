@@ -1,14 +1,14 @@
 use bevy::{prelude::*, window::PresentMode};
 
+mod fight_scene;
 mod map;
 mod player;
 mod skill_tree;
-mod fight_scene;
 
+use fight_scene::FightScenePlugin;
 use map::MapPlugin;
 use player::PlayerPlugin;
 use skill_tree::SkillTreePlugin;
-use fight_scene::FightScenePlugin;
 
 const TITLE: &str = "main";
 const WIN_W: f32 = 1280.;
@@ -23,7 +23,7 @@ enum GameState {
     BattleMode,
 }
 
-fn main(){
+fn main() {
     App::new()
         .insert_resource(ClearColor(Color::Srgba(Srgba::gray(0.25))))
         .add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -44,6 +44,4 @@ fn main(){
             add other plugins here
         */
         .run();
-
 }
-

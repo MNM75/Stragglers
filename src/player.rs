@@ -1,8 +1,8 @@
-use bevy::prelude::*;
 use crate::map::Wall;
 use crate::GameState;
+use crate::WIN_H;
 use crate::WIN_W;
-use crate::WIN_H; 
+use bevy::prelude::*;
 
 const TILE_SIZE: u32 = 144;
 
@@ -64,19 +64,23 @@ impl From<Vec2> for Velocity {
     fn from(velocity: Vec2) -> Self {
         Self { velocity }
     }
-}    
+}
 pub struct PlayerPlugin;
 
-impl Plugin for PlayerPlugin{
-    fn build(&self, app: &mut App){
+impl Plugin for PlayerPlugin {
+    fn build(&self, app: &mut App) {
         app.add_systems(Startup, init_player)
-        .add_systems(Update, move_player.run_if(in_state(GameState::InGame)))
-        .add_systems(Update, animate_player.after(move_player))
-        .add_systems(Update, move_camera.after(move_player).run_if(in_state(GameState::InGame)));
+            .add_systems(Update, move_player.run_if(in_state(GameState::InGame)))
+            .add_systems(Update, animate_player.after(move_player))
+            .add_systems(
+                Update,
+                move_camera
+                    .after(move_player)
+                    .run_if(in_state(GameState::InGame)),
+            );
     }
-
 }
-    
+
 fn init_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -111,6 +115,7 @@ fn init_player(
 fn animate_player(
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
+
     mut player: Query<
         (
             &Velocity,
@@ -142,8 +147,8 @@ fn animate_player(
         timer.tick(time.delta());
 
         if timer.just_finished() {
-        counter = counter +1;
-        texture_atlas.index = (texture_atlas.index + counter) % **frame_count + direction;
+            counter += 1;
+            texture_atlas.index = (texture_atlas.index + counter) % frame_count;
         }
     }
 }
@@ -153,7 +158,10 @@ fn move_player(
     input: Res<ButtonInput<KeyCode>>,
     //mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     wall_query: Query<&Transform, (With<Wall>, Without<Player>)>,
-    mut player: Query<(&mut Transform, &mut Velocity, &mut TextureAtlas), (With<Player>, Without<Background>)>,
+    mut player: Query<
+        (&mut Transform, &mut Velocity, &mut TextureAtlas),
+        (With<Player>, Without<Background>),
+    >,
 ) {
     let (mut pt, mut pv, mut texture_atlas) = player.single_mut();
 
@@ -188,12 +196,12 @@ fn move_player(
     let change = pv.velocity * deltat;
 
     let new_pos = pt.translation + Vec3::new(change.x, 0., 0.);
-    
+
     if new_pos.x >= -(LEVEL_W / 2.) + (TILE_SIZE as f32) / 2.
         && new_pos.x <= LEVEL_W / 2. - (TILE_SIZE as f32) / 2.
     {
         //check collision
-        if !check_wall_collision(new_pos, &wall_query){
+        if !check_wall_collision(new_pos, &wall_query) {
             pt.translation = new_pos;
         }
     }
@@ -202,8 +210,8 @@ fn move_player(
     if new_pos.y >= -(LEVEL_H / 2.) + (TILE_SIZE as f32) / 2.
         && new_pos.y <= LEVEL_H / 2. - (TILE_SIZE as f32) / 2.
     {
-         //check collision
-         if !check_wall_collision(new_pos, &wall_query){
+        //check collision
+        if !check_wall_collision(new_pos, &wall_query) {
             pt.translation = new_pos;
         }
     }
@@ -217,7 +225,7 @@ fn check_wall_collision(
         let a: Sides = new_pos.into();
         let b: Sides = collider_transform.translation.into();
         if a.bottom <= b.top && a.top >= b.bottom && a.right >= b.left && a.left <= b.right {
-            return true
+            return true;
         }
     }
     return false;
@@ -234,4 +242,4 @@ fn move_camera(
     let y_bound = LEVEL_H / 2. - WIN_H / 2.;
     ct.translation.x = pt.translation.x.clamp(-x_bound, x_bound);
     ct.translation.y = pt.translation.y.clamp(-y_bound, y_bound);
-}    
+}
