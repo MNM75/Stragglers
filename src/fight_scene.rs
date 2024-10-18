@@ -269,7 +269,7 @@ fn show_battle_ui(
 
     let mut ehb = enemy_hb.single_mut();
 
-    ehb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)+400.0-(240.0*(1.0-player_health));   // same logic as camera/player movement
+    ehb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)+400.0-(240.0*(1.0-enemy_health));   // same logic as camera/player movement
     ehb.translation.y = pt.translation.y.clamp(-y_bound, y_bound)+200.0;   // same logic as camera/player movement
     ehb.translation.z = pt.translation.z + 1.;
 
