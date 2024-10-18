@@ -1,8 +1,8 @@
+use bevy::prelude::*;
 use crate::map::Wall;
 use crate::GameState;
 use crate::WIN_H;
 use crate::WIN_W;
-use bevy::prelude::*;
 
 const TILE_SIZE: u32 = 144;
 
@@ -65,6 +65,7 @@ impl From<Vec2> for Velocity {
         Self { velocity }
     }
 }
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
