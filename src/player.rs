@@ -126,12 +126,28 @@ fn animate_player(
     >,
 ) {
     let (v, mut texture_atlas, mut timer, frame_count) = player.single_mut();
+    let mut counter: usize = 0;
+    let mut direction = 8;
 
+    if input.pressed(KeyCode::KeyD) { //move right
+        direction = 0;
+    }
+    if input.pressed(KeyCode::KeyA) { //move left
+        direction = 4;
+    }
+    if input.pressed(KeyCode::KeyS) { //move down
+        direction = 8;
+    }
+    if input.pressed(KeyCode::KeyW) { //move up
+        direction = 12;
+    }
+   
     if v.velocity.cmpne(Vec2::ZERO).any() {
         timer.tick(time.delta());
 
         if timer.just_finished() {
-            texture_atlas.index = (texture_atlas.index + 1) % frame_count.0; // Access the inner usize
+        counter = counter +1;
+        texture_atlas.index = (texture_atlas.index + counter) % **frame_count + direction;
         }
     }
 }
