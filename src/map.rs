@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use rand::prelude::*;
+use crate::enemy::spawn_enemy;
 const TILE_SIZE: u32 = 144;
 
 #[derive(Component)]
@@ -212,6 +213,13 @@ fn create_hallway(
         t.x = start_position.x; // reset x to the starting x position
         t.y -= TILE_SIZE as f32; // move down for the next row
     }
+
+    ////// spawning enemy at random point in hallway ////// 
+    let new_rand: usize = random();
+    let random_x = start_position.x + random::<f32>() * ((start_position.x + HALLWAY_COLUMNS as f32 * TILE_SIZE as f32) - start_position.x);
+    let random_y = start_position.y + random::<f32>() * ((start_position.y - (HALLWAY_ROWS - 1) as f32 * TILE_SIZE as f32) - start_position.y);
+    let enemy_position = Vec3::new(random_x, random_y, 1.0);
+    spawn_enemy(commands, asset_server, texture_atlases, enemy_position);
 
     Vec3::new(start_position.x + (HALLWAY_COLUMNS as f32 * TILE_SIZE as f32), t.y, 0.0)
 }

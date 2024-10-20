@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 use crate::map::Wall;
+use crate::enemy::Enemy;
+use crate::events::EnemyCollisionEvent;
 use crate::GameState;
 use crate::WIN_W;
 use crate::WIN_H; 
@@ -137,7 +139,9 @@ fn move_player(
     input: Res<ButtonInput<KeyCode>>,
     //mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     wall_query: Query<&Transform, (With<Wall>, Without<Player>)>,
+    enemy_query: Query<&Transform, (With<Enemy>, Without<Player>)>,
     mut player: Query<(&mut Transform, &mut Velocity, &mut TextureAtlas), (With<Player>, Without<Background>)>,
+    mut event_writer: EventWriter<EnemyCollisionEvent>,
 ) {
     let (mut pt, mut pv, mut texture_atlas) = player.single_mut();
 
@@ -184,7 +188,7 @@ fn move_player(
         && new_pos.x <= LEVEL_W / 2. - (TILE_SIZE as f32) / 2.
     {
         //check collision
-        if !check_wall_collision(new_pos, &wall_query){
+        if !check_wall_collision(new_pos, &wall_query) && !check_enemy_collision(new_pos, &enemy_query, &mut event_writer){
             pt.translation = new_pos;
         }
     }
@@ -194,7 +198,7 @@ fn move_player(
         && new_pos.y <= LEVEL_H / 2. - (TILE_SIZE as f32) / 2.
     {
          //check collision
-         if !check_wall_collision(new_pos, &wall_query){
+         if !check_wall_collision(new_pos, &wall_query) && !check_enemy_collision(new_pos, &enemy_query, &mut event_writer){
             pt.translation = new_pos;
         }
     }
@@ -209,6 +213,22 @@ fn check_wall_collision(
         let b: Sides = collider_transform.translation.into();
         if a.bottom <= b.top && a.top >= b.bottom && a.right >= b.left && a.left <= b.right {
             return true
+        }
+    }
+    return false;
+}
+
+fn check_enemy_collision(
+    new_pos: Vec3,
+    collider_query: &Query<&Transform, (With<Enemy>, Without<Player>)>,
+    mut collision_events: &mut EventWriter<EnemyCollisionEvent>,
+) -> bool {
+    for collider_transform in collider_query.iter() {
+        let a: Sides = new_pos.into();
+        let b: Sides = collider_transform.translation.into();
+        if a.bottom <= b.top && a.top >= b.bottom && a.right >= b.left && a.left <= b.right {
+            collision_events.send(EnemyCollisionEvent);
+            return true;
         }
     }
     return false;

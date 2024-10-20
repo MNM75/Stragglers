@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use crate::GameState;
+use crate::events::EnemyCollisionEvent;
 
 #[derive(Component)]
 struct PlayerSprite;
@@ -32,6 +33,7 @@ impl Plugin for FightScenePlugin {
         app.add_systems(OnEnter(GameState::BattleMode), setup_battle_ui);
         app.add_systems(OnExit(GameState::BattleMode), despawn_battle_ui);        
         app.add_systems(Update, toggle_battle_scene);
+        app.add_systems(Update, init_upon_collision);
     }
 }
 
@@ -48,6 +50,22 @@ fn toggle_battle_scene(
                 GameState::SkillTreeMenu => next_state.set(GameState::BattleMode),
             }
         }
+}
+
+// open battle scene upon enemy collision (does not close upon re-collision)
+// for development: press p and move character to exit battle scene
+fn init_upon_collision(
+    state: Res<State<GameState>>,
+    mut next_state: ResMut<NextState<GameState>>,
+    mut collision_events: EventReader<EnemyCollisionEvent>,
+){
+    for event in collision_events.read() {
+        match state.get() {
+            GameState::InGame => next_state.set(GameState::BattleMode),
+            GameState::BattleMode => next_state.set(GameState::BattleMode),
+            GameState::SkillTreeMenu => next_state.set(GameState::BattleMode),
+        }
+    }
 }
 
 // Set up battle scene UI
