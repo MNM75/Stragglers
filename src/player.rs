@@ -1,22 +1,3 @@
-    use bevy::prelude::*;
-    use crate::map::Wall;
-    use crate::GameState;
-    use crate::WIN_W;
-    use crate::WIN_H;
- 
-    const TILE_SIZE: u32 = 144;
-    
-    const PLAYER_SPEED: f32 = 500.;
-    const ACCEL_RATE: f32 = 5000.;
-    
-    pub const LEVEL_W: f32 = 1920.;
-    pub const LEVEL_H: f32 = 1920.;
-    enum PlayerType {
-        Character,
-    }
-    
-    #[derive(Component)]
-    pub struct Player;
 use bevy::prelude::*;
 use crate::map::Wall;
 use crate::enemy::Enemy;
@@ -97,41 +78,7 @@ impl Plugin for PlayerPlugin{
     }
 
 }
-    pub struct Sides {
-        top: f32,
-        bottom: f32,
-        left: f32,
-        right: f32,
-    }
-    impl From<Vec3> for Sides {
-        fn from(pos: Vec3) -> Self {
-            Self {
-                top: pos.y + (TILE_SIZE as f32) / 2.,
-                bottom: pos.y - (TILE_SIZE as f32) / 2.,
-                left: pos.x - (TILE_SIZE as f32) / 2.,
-                right: pos.x + (TILE_SIZE as f32) / 2.,
-            }
-        }
-    }
     
-    #[derive(Component)]
-    struct Velocity {
-        velocity: Vec2,
-    }
-    impl Velocity {
-        fn new() -> Self {
-            Self {
-                velocity: Vec2::splat(0.),
-            }
-        }
-    }
-    
-    impl From<Vec2> for Velocity {
-        fn from(velocity: Vec2) -> Self {
-            Self { velocity }
-        }
-    }
-
     #[derive(Component)]
     pub struct PlayerStats {
         pub attack: u32,
@@ -173,17 +120,6 @@ impl Plugin for PlayerPlugin{
         }        
     }
 
-    pub struct PlayerPlugin;
-    
-    impl Plugin for PlayerPlugin{
-        fn build(&self, app: &mut App){
-            app.add_systems(Startup, init_player)
-            .add_systems(Update, move_player.run_if(in_state(GameState::InGame)))
-            .add_systems(Update, move_camera.after(move_player).run_if(in_state(GameState::InGame)));
-        }
-    
-    }
-    
 pub fn init_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
