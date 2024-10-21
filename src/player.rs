@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 use crate::map::Wall;
+use crate::enemy::Enemy;
+use crate::events::EnemyCollisionEvent;
 use crate::GameState;
-use crate::WIN_H;
 use crate::WIN_W;
+use crate::WIN_H; 
 
 const TILE_SIZE: u32 = 144;
 
@@ -64,24 +66,19 @@ impl From<Vec2> for Velocity {
     fn from(velocity: Vec2) -> Self {
         Self { velocity }
     }
-}
-
+}    
 pub struct PlayerPlugin;
 
-impl Plugin for PlayerPlugin {
-    fn build(&self, app: &mut App) {
+impl Plugin for PlayerPlugin{
+    fn build(&self, app: &mut App){
         app.add_systems(Startup, init_player)
-            .add_systems(Update, move_player.run_if(in_state(GameState::InGame)))
-            .add_systems(Update, animate_player.after(move_player))
-            .add_systems(
-                Update,
-                move_camera
-                    .after(move_player)
-                    .run_if(in_state(GameState::InGame)),
-            );
+        .add_systems(Update, move_player.run_if(in_state(GameState::InGame)))
+        .add_systems(Update, animate_player.after(move_player))
+        .add_systems(Update, move_camera.after(move_player).run_if(in_state(GameState::InGame)));
     }
-}
 
+}
+    
 fn init_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -92,7 +89,6 @@ fn init_player(
     let pc_layout = TextureAtlasLayout::from_grid(UVec2::new(82, 144), 4, 4, None, None);
     let pc_layout_len = pc_layout.textures.len();
     let pc_layout_handle = texture_atlases.add(pc_layout);
-
     commands.spawn((
         SpriteBundle {
             texture: pc_sheet_handle,
@@ -112,6 +108,7 @@ fn init_player(
         Player,
     ));
 }
+
 fn animate_player(
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
@@ -152,34 +149,41 @@ fn animate_player(
     }
 }
 
+
 fn move_player(
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
     //mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     wall_query: Query<&Transform, (With<Wall>, Without<Player>)>,
-    mut player: Query<
-        (&mut Transform, &mut Velocity, &mut TextureAtlas),
-        (With<Player>, Without<Background>),
-    >,
+    enemy_query: Query<&Transform, (With<Enemy>, Without<Player>)>,
+    mut player: Query<(&mut Transform, &mut Velocity, &mut TextureAtlas), (With<Player>, Without<Background>)>,
+    mut event_writer: EventWriter<EnemyCollisionEvent>,
 ) {
     let (mut pt, mut pv, mut texture_atlas) = player.single_mut();
 
     let mut deltav = Vec2::splat(0.);
+    //if input.just_pressed(KeyCode::KeyA){
+        // texture_atlas.index = 4;
+    //}
 
     if input.pressed(KeyCode::KeyA) {
         deltav.x -= 1.;
+        texture_atlas.index = 4;
     }
 
     if input.pressed(KeyCode::KeyD) {
         deltav.x += 1.;
+        //texture_atlas.index = 0;
     }
 
     if input.pressed(KeyCode::KeyW) {
         deltav.y += 1.;
+        texture_atlas.index = 12;
     }
 
     if input.pressed(KeyCode::KeyS) {
         deltav.y -= 1.;
+        texture_atlas.index = 8;
     }
 
     let deltat = time.delta_seconds();
@@ -195,12 +199,12 @@ fn move_player(
     let change = pv.velocity * deltat;
 
     let new_pos = pt.translation + Vec3::new(change.x, 0., 0.);
-
+    
     if new_pos.x >= -(LEVEL_W / 2.) + (TILE_SIZE as f32) / 2.
         && new_pos.x <= LEVEL_W / 2. - (TILE_SIZE as f32) / 2.
     {
         //check collision
-        if !check_wall_collision(new_pos, &wall_query) {
+        if !check_wall_collision(new_pos, &wall_query) && !check_enemy_collision(new_pos, &enemy_query, &mut event_writer){
             pt.translation = new_pos;
         }
     }
@@ -209,8 +213,8 @@ fn move_player(
     if new_pos.y >= -(LEVEL_H / 2.) + (TILE_SIZE as f32) / 2.
         && new_pos.y <= LEVEL_H / 2. - (TILE_SIZE as f32) / 2.
     {
-        //check collision
-        if !check_wall_collision(new_pos, &wall_query) {
+         //check collision
+         if !check_wall_collision(new_pos, &wall_query) && !check_enemy_collision(new_pos, &enemy_query, &mut event_writer){
             pt.translation = new_pos;
         }
     }
@@ -224,6 +228,22 @@ fn check_wall_collision(
         let a: Sides = new_pos.into();
         let b: Sides = collider_transform.translation.into();
         if a.bottom <= b.top && a.top >= b.bottom && a.right >= b.left && a.left <= b.right {
+            return true
+        }
+    }
+    return false;
+}
+
+fn check_enemy_collision(
+    new_pos: Vec3,
+    collider_query: &Query<&Transform, (With<Enemy>, Without<Player>)>,
+    mut collision_events: &mut EventWriter<EnemyCollisionEvent>,
+) -> bool {
+    for collider_transform in collider_query.iter() {
+        let a: Sides = new_pos.into();
+        let b: Sides = collider_transform.translation.into();
+        if a.bottom <= b.top && a.top >= b.bottom && a.right >= b.left && a.left <= b.right {
+            collision_events.send(EnemyCollisionEvent);
             return true;
         }
     }
@@ -241,4 +261,4 @@ fn move_camera(
     let y_bound = LEVEL_H / 2. - WIN_H / 2.;
     ct.translation.x = pt.translation.x.clamp(-x_bound, x_bound);
     ct.translation.y = pt.translation.y.clamp(-y_bound, y_bound);
-}
+}    
