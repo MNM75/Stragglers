@@ -1,17 +1,6 @@
 use bevy::prelude::*;
 use crate::GameState;
-
-use crate::player::Player;
-use crate::WIN_W;
-use crate::WIN_H;
-use crate::player::LEVEL_W;
-use crate::player::LEVEL_H;
-
-#[derive(Component)]
-struct FightScene;
-
-#[derive(Component)]
-struct FightSprites;
+use crate::events::EnemyCollisionEvent;
 
 #[derive(Component)]
 struct PlayerSprite;
@@ -41,11 +30,10 @@ pub struct FightScenePlugin;
 
 impl Plugin for FightScenePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_battle_ui);
-        app.add_systems(PostStartup, hide_battle_ui);
-        app.add_systems(OnEnter(GameState::BattleMode), show_battle_ui);
-        app.add_systems(OnExit(GameState::BattleMode), hide_battle_ui);        
+        app.add_systems(OnEnter(GameState::BattleMode), setup_battle_ui);
+        app.add_systems(OnExit(GameState::BattleMode), despawn_battle_ui);        
         app.add_systems(Update, toggle_battle_scene);
+        app.add_systems(Update, init_upon_collision);
     }
 }
 
@@ -53,7 +41,8 @@ impl Plugin for FightScenePlugin {
 fn toggle_battle_scene(
     state: Res<State<GameState>>,
     mut next_state: ResMut<NextState<GameState>>,
-    input: Res<ButtonInput<KeyCode>>,) {
+    input: Res<ButtonInput<KeyCode>>,
+) {
         if input.just_pressed(KeyCode::KeyP) {
             match state.get() {
                 GameState::InGame => next_state.set(GameState::BattleMode),
@@ -61,6 +50,22 @@ fn toggle_battle_scene(
                 GameState::SkillTreeMenu => next_state.set(GameState::BattleMode),
             }
         }
+}
+
+// open battle scene upon enemy collision (does not close upon re-collision)
+// for development: press p and move character to exit battle scene
+fn init_upon_collision(
+    state: Res<State<GameState>>,
+    mut next_state: ResMut<NextState<GameState>>,
+    mut collision_events: EventReader<EnemyCollisionEvent>,
+){
+    for event in collision_events.read() {
+        match state.get() {
+            GameState::InGame => next_state.set(GameState::BattleMode),
+            GameState::BattleMode => next_state.set(GameState::BattleMode),
+            GameState::SkillTreeMenu => next_state.set(GameState::BattleMode),
+        }
+    }
 }
 
 // Set up battle scene UI
@@ -83,14 +88,12 @@ fn setup_battle_ui(
             texture: bg_texture_handle,
             transform: Transform {
                 translation: Vec3::new(0., 0., 0.), // position background
-                scale: Vec3::new(1.0, 1.0, 1.0),
+                scale: Vec3::new(1.0, 1.0, 1.0),   // scale as needed
                 ..default()
             },
             ..default()
         },
         BattleBackground,
-        FightSprites,
-        FightScene
     ));
 
     // player sprite
@@ -105,8 +108,6 @@ fn setup_battle_ui(
             ..default()
         },
         PlayerSprite,
-        FightSprites,
-        FightScene
     ));
 
     // enemy sprite
@@ -121,8 +122,6 @@ fn setup_battle_ui(
             ..default()
         },
         EnemySprite,
-        FightSprites,
-        FightScene
     ));
 
     // menu text
@@ -145,7 +144,6 @@ fn setup_battle_ui(
             ..default()
         },
         BattleMenuText,
-        FightScene
     ));
 
     // player health bar background
@@ -160,8 +158,6 @@ fn setup_battle_ui(
             ..default()
         },
         PlayerHealthBarBackground,
-        FightSprites,
-        FightScene
     ));
 
     // player health bar: scales based on health
@@ -176,8 +172,6 @@ fn setup_battle_ui(
             ..default()
         },
         PlayerHealthBar,
-        FightSprites,
-        FightScene
     ));
 
     // enemy health bar background
@@ -192,8 +186,6 @@ fn setup_battle_ui(
             ..default()
         },
         EnemyHealthBarBackground,
-        FightSprites,
-        FightScene
     ));
 
     // enemy health bar: scales based on health
@@ -208,84 +200,26 @@ fn setup_battle_ui(
             ..default()
         },
         EnemyHealthBar,
-        FightSprites,
-        FightScene
     ));
 }
 
-// Hide
-fn show_battle_ui(
+// Despawn battle UI when exiting the battle mode
+
+fn despawn_battle_ui(
     mut commands: Commands,
-    query: Query<Entity, With<FightScene>>,
-    mut background: Query<&mut Transform, (With<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
-    mut player_sp: Query<&mut Transform, (With<PlayerSprite>, Without<BattleBackground>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
-    mut enemy_sp: Query<&mut Transform, (With<EnemySprite>, Without<BattleBackground>, Without<PlayerSprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
-    mut player_hb: Query<&mut Transform, (With<PlayerHealthBar>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
-    mut player_hbb: Query<&mut Transform, (With<PlayerHealthBarBackground>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
-    mut enemy_hb: Query<&mut Transform, (With<EnemyHealthBar>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBarBackground>)>,
-    mut enemy_hbb: Query<&mut Transform, (With<EnemyHealthBarBackground>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>)>,
-    player: Query<&Transform, (With<Player>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
+    query: Query<Entity, Or<(
+        With<BattleBackground>,
+        With<PlayerSprite>,
+        With<EnemySprite>,
+        With<PlayerHealthBar>,
+        With<PlayerHealthBarBackground>,
+        With<EnemyHealthBar>,
+        With<EnemyHealthBarBackground>,
+        With<BattleMenuText>,
+    )>>,
 ) {
-    let player_health = 0.75;  
-    let enemy_health = 0.5;   
-
+    // Despawn all battle-related entities
     for entity in query.iter() {
-        commands.entity(entity).insert(Visibility::Visible);
-    }
-    let pt = player.single();
-    //for sprite in sprites.iter() {
-
-    let mut bg = background.single_mut();
-    let x_bound = LEVEL_W / 2. - WIN_W / 2.;
-    let y_bound = LEVEL_H / 2. - WIN_H / 2.;
-
-    bg.translation.x = pt.translation.x.clamp(-x_bound, x_bound);   // same logic as camera/player movement
-    bg.translation.y = pt.translation.y.clamp(-y_bound, y_bound);   // same logic as camera/player movement
-    bg.translation.z = pt.translation.z + 1.;
-
-    let mut ps = player_sp.single_mut();
-
-    ps.translation.x = pt.translation.x.clamp(-x_bound, x_bound)-400.0;   // same logic as camera/player movement
-    ps.translation.y = pt.translation.y.clamp(-y_bound, y_bound)-100.0;   // same logic as camera/player movement
-    ps.translation.z = pt.translation.z + 1.;
-
-    let mut es = enemy_sp.single_mut();
-
-    es.translation.x = pt.translation.x.clamp(-x_bound, x_bound)+400.0;   // same logic as camera/player movement
-    es.translation.y = pt.translation.y.clamp(-y_bound, y_bound)-100.0;   // same logic as camera/player movement
-    es.translation.z = pt.translation.z + 1.;
-
-    let mut phb = player_hb.single_mut();
-
-    phb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)-400.0-(240.0*(1.0-player_health));   // same logic as camera/player movement
-    phb.translation.y = pt.translation.y.clamp(-y_bound, y_bound)+200.0;   // same logic as camera/player movement
-    phb.translation.z = pt.translation.z + 1.;
-
-    let mut phbb = player_hbb.single_mut();
-
-    phbb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)-400.0;   // same logic as camera/player movement
-    phbb.translation.y = pt.translation.y.clamp(-y_bound, y_bound)+200.0;   // same logic as camera/player movement
-    phbb.translation.z = pt.translation.z + 1.;
-
-    let mut ehb = enemy_hb.single_mut();
-
-    ehb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)+400.0-(240.0*(1.0-enemy_health));   // same logic as camera/player movement
-    ehb.translation.y = pt.translation.y.clamp(-y_bound, y_bound)+200.0;   // same logic as camera/player movement
-    ehb.translation.z = pt.translation.z + 1.;
-
-    let mut ehbb = enemy_hbb.single_mut();
-
-    ehbb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)+400.0;   // same logic as camera/player movement
-    ehbb.translation.y = pt.translation.y.clamp(-y_bound, y_bound)+200.0;   // same logic as camera/player movement
-    ehbb.translation.z = pt.translation.z + 1.;
-    //}/**/
-}
-
-fn hide_battle_ui(
-    mut commands: Commands,
-    query: Query<Entity, With<FightScene>>,
-) {
-    for entity in query.iter() {
-        commands.entity(entity).insert(Visibility::Hidden);
+        commands.entity(entity).despawn();
     }
 }

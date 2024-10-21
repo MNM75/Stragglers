@@ -42,18 +42,6 @@ fn init_enemy(
     })
     .insert(Enemy {});
 }*/
-/* 
-
-fn init_enemy(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
-) {
-    // Define the starting position for the enemy
-    let position = Vec3::new(0.0, 0.0, 900.0);
-    
-    spawn_enemy(&mut commands, &asset_server, &mut texture_atlases, position);
-} */
 
 pub fn spawn_enemy(
     commands: &mut Commands,
