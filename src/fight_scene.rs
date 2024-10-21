@@ -1,6 +1,17 @@
 use bevy::prelude::*;
 use crate::GameState;
-use crate::events::EnemyCollisionEvent;
+
+use crate::player::Player;
+use crate::WIN_W;
+use crate::WIN_H;
+use crate::player::LEVEL_W;
+use crate::player::LEVEL_H;
+
+#[derive(Component)]
+struct FightScene;
+
+#[derive(Component)]
+struct FightSprites;
 
 #[derive(Component)]
 struct PlayerSprite;

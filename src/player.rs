@@ -149,6 +149,7 @@ fn animate_player(
     }
 }
 
+
 fn move_player(
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
