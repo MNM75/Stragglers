@@ -3,10 +3,17 @@ use bevy::{prelude::*, window::PresentMode};
 mod map;
 mod player;
 mod skill_tree;
+mod fight_scene;
+mod enemy;
+mod events;
 
 use map::MapPlugin;
 use player::PlayerPlugin;
 use crate::skill_tree::SkillTreePlugin;
+use skill_tree::SkillTreePlugin;
+use fight_scene::FightScenePlugin;
+use enemy::EnemyPlugin;
+use events::EnemyCollisionEvent;
 
 const TITLE: &str = "main";
 const WIN_W: f32 = 1280.;
@@ -18,6 +25,7 @@ enum GameState {
     #[default]
     InGame,
     SkillTreeMenu,
+    BattleMode,
 }
 
 fn main(){
@@ -36,10 +44,12 @@ fn main(){
         .add_plugins(MapPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(SkillTreePlugin)
+        .add_plugins(FightScenePlugin)
+        .add_plugins(EnemyPlugin)
+        .add_event::<EnemyCollisionEvent>()
         /*
             add other plugins here
         */
         .run();
 
 }
-

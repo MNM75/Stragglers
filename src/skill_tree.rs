@@ -336,6 +336,7 @@ fn toggle_skill_tree_ui(
             match state.get() {
                 GameState::InGame => next_state.set(GameState::SkillTreeMenu),
                 GameState::SkillTreeMenu => next_state.set(GameState::InGame),
+                GameState::BattleMode => next_state.set(GameState::SkillTreeMenu),
             }
         }
 }
