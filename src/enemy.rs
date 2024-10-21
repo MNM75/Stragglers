@@ -18,8 +18,8 @@ pub struct EnemyPlugin;
     
 impl Plugin for EnemyPlugin{
     fn build(&self, app: &mut App){
-        //app.add_systems(Startup, init_enemy)
-        app.add_systems(Update, enemy_pace.run_if(in_state(GameState::InGame)));
+/*         app.add_systems(Startup, init_enemy);
+ */        app.add_systems(Update, enemy_pace.run_if(in_state(GameState::InGame)));
     }
 
 }

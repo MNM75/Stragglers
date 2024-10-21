@@ -296,8 +296,8 @@ fn show_skill_tree_ui(
     mut commands: Commands,
     query: Query<Entity, With<SkillTreeUIComponent>>,
     mut background: Query<&mut Transform, With<SkillTreeUIBackground>>,
-    player: Query<&Transform, (With<Player>, Without<SkillTreeUIBackground>)>, // an &Transform with <Player> would not have <SkillTreeUIBackground> applied by user logic, but the Without<T> is included to not cause a panic and crash the game
-) {
+    player: Query<&Transform, (With<Player>, Without<SkillTreeUIBackground>)>,) // an &Transform with <Player> would not have <SkillTreeUIBackground> applied by user logic, but the Without<T> is included to not cause a panic and crash the game
+{
     // makes the skill tree UI visible
     for entity in query.iter() {
         commands.entity(entity).insert(Visibility::Visible);
@@ -316,8 +316,8 @@ fn show_skill_tree_ui(
 
 fn hide_skill_tree_ui(
     mut commands: Commands,
-    query: Query<Entity, With<SkillTreeUIComponent>>
-) {
+    query: Query<Entity, With<SkillTreeUIComponent>>)
+{
     for entity in query.iter() {
         commands.entity(entity).insert(Visibility::Hidden);
     }
@@ -326,8 +326,7 @@ fn hide_skill_tree_ui(
 fn toggle_skill_tree_ui(
     state: Res<State<GameState>>,
     mut next_state: ResMut<NextState<GameState>>,
-    input: Res<ButtonInput<KeyCode>>,
-) {
+    input: Res<ButtonInput<KeyCode>>,) {
         if input.just_pressed(KeyCode::KeyQ) {
             match state.get() {
                 GameState::InGame => next_state.set(GameState::SkillTreeMenu),
