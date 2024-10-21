@@ -6,6 +6,7 @@ use bevy::{
 use crate::GameState;
 use crate::player::PlayerStats;
 use crate::player::Player;
+use crate::player::init_player;
 use crate::WIN_W;
 use crate::WIN_H;
 use crate::player::LEVEL_W;
@@ -29,17 +30,22 @@ enum StatType {
     Hp,
     SkillPoints,
     AbilityPoints,
+    Strength,
+    Mgk,
+    Agility,
+    Health,
 }
 
 pub struct SkillTreePlugin;
 
 impl Plugin for SkillTreePlugin{
     fn build(&self, app: &mut App){
-        app.add_systems(Startup, load_skill_tree_ui);
+        app.add_systems(Startup, load_skill_tree_ui.after(init_player));
         app.add_systems(PostStartup, hide_skill_tree_ui);
         app.add_systems(Update, toggle_skill_tree_ui);
         app.add_systems(Update, update_skill_tree_ui);
-        //app.add_systems(Update, spend_ability_point);
+        app.add_systems(Update, spend_ability_point);
+        app.add_systems(Update, spend_skill_point);
         app.add_systems(OnEnter(GameState::SkillTreeMenu), show_skill_tree_ui);
         app.add_systems(OnExit(GameState::SkillTreeMenu), hide_skill_tree_ui);
     }
@@ -109,7 +115,7 @@ fn load_skill_tree_ui(
         commands.spawn((
             SkillTreeUIComponent,
             TextBundle::from_section(
-                "0",
+                player_stats.strength.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -127,7 +133,7 @@ fn load_skill_tree_ui(
         commands.spawn((
             SkillTreeUIComponent,
             TextBundle::from_section(
-                "0",
+                player_stats.mgk.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -145,7 +151,7 @@ fn load_skill_tree_ui(
         commands.spawn((
             SkillTreeUIComponent,
             TextBundle::from_section(
-                "0",
+                player_stats.agility.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -163,7 +169,7 @@ fn load_skill_tree_ui(
         commands.spawn((
             SkillTreeUIComponent,
             TextBundle::from_section(
-                "0",
+                player_stats.health.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -362,24 +368,63 @@ fn update_skill_tree_ui(
                 StatType::AbilityPoints => {
                     text.sections[0].value = player_stats.ability_points.to_string();
                 }
+                StatType::Strength => {
+                    text.sections[0].value = player_stats.attack.to_string();
+                }
+                StatType::Mgk => {
+                    text.sections[0].value = player_stats.attack.to_string();
+                }
+                StatType::Agility => {
+                    text.sections[0].value = player_stats.attack.to_string();
+                }
+                StatType::Health => {
+                    text.sections[0].value = player_stats.attack.to_string();
+                }
             }
         }
     }
 }
 
-/*fn spend_ability_point(
+fn spend_ability_point(
+    input: Res<ButtonInput<KeyCode>>, // Directly read input for key presses
     mut player_query: Query<&mut PlayerStats, With<Player>>,
-    stat_to_increase: StatType,
 ) {
     if let Ok(mut player_stats) = player_query.get_single_mut() {
-        match stat_to_increase {
-            StatType::Attack => player_stats.attack += 1,
-            StatType::Magic => player_stats.magic += 1,
-            StatType::Speed => player_stats.speed += 1,
-            StatType::MaxHp => player_stats.max_hp += 10,
-            StatType::Hp => player_stats.hp += 1,
-            _ => {} //catch-all case, makes sure skill points aren't used for ability upgrades
+        // Check for key presses and upgrade the appropriate stat
+        if input.just_pressed(KeyCode::KeyF) { //press f to upgrade respect *attack
+            player_stats.attack += 1;
+        } else if input.just_pressed(KeyCode::KeyG) { //g to upgrade magic
+            player_stats.magic += 1;
+        } else if input.just_pressed(KeyCode::KeyH) { //h to upgrade speed
+            player_stats.speed += 1;
+        } else if input.just_pressed(KeyCode::KeyJ) { //j to upgrade max_hp all temporary for now
+            player_stats.max_hp += 10;
+        } else {
+            return; // No valid key pressed, exit early
         }
-        player_stats.ability_points -= 1; // Deduct ability point
+        // Deduct an ability point for every successful upgrade
+        player_stats.ability_points -= 1;
     }
-}*/
+}
+
+fn spend_skill_point(
+    input: Res<ButtonInput<KeyCode>>, // Directly read input for key presses
+    mut player_query: Query<&mut PlayerStats, With<Player>>,
+) {
+    if let Ok(mut player_stats) = player_query.get_single_mut() {
+        // Check for key presses and upgrade the appropriate stat
+        if input.just_pressed(KeyCode::KeyR) {
+            player_stats.strength += 1;
+        } else if input.just_pressed(KeyCode::KeyT) {
+            player_stats.mgk += 1;
+        } else if input.just_pressed(KeyCode::KeyY) {
+            player_stats.agility += 1;
+        } else if input.just_pressed(KeyCode::KeyU) {
+            player_stats.health += 10;
+        } else {
+            return; // No valid key pressed, exit early
+        }
+        // Deduct an ability point for every successful upgrade
+        player_stats.skill_points -= 1;
+    }
+}

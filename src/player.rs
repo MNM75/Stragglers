@@ -65,6 +65,10 @@
         pub hp: u32,
         pub skill_points: u32,
         pub ability_points: u32,
+        pub strength: u32,
+        pub mgk: u32,
+        pub agility: u32,
+        pub health: u32,
     }
 
     impl PlayerStats {
@@ -74,9 +78,13 @@
                 magic: 1,
                 speed: 1,
                 max_hp: 10,
-                hp: 1,
+                hp: 10,
                 skill_points: 0,
                 ability_points: 8,
+                strength: 0,
+                mgk: 0,
+                agility: 0,
+                health: 0,
             }
         }
 
@@ -100,7 +108,7 @@
     
     }
     
-    fn init_player(
+    pub fn init_player(
         mut commands: Commands,
         asset_server: Res<AssetServer>,
         mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
