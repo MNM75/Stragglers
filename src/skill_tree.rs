@@ -44,8 +44,8 @@ impl Plugin for SkillTreePlugin{
         app.add_systems(PostStartup, hide_skill_tree_ui);
         app.add_systems(Update, toggle_skill_tree_ui);
         app.add_systems(Update, update_skill_tree_ui);
-        app.add_systems(Update, spend_ability_point);
-        app.add_systems(Update, spend_skill_point);
+        app.add_systems(Update, spend_ability_point.run_if(in_state(GameState::SkillTreeMenu)));
+        app.add_systems(Update, spend_skill_point.run_if(in_state(GameState::SkillTreeMenu)));
         app.add_systems(OnEnter(GameState::SkillTreeMenu), show_skill_tree_ui);
         app.add_systems(OnExit(GameState::SkillTreeMenu), hide_skill_tree_ui);
     }
@@ -200,7 +200,7 @@ fn load_skill_tree_ui(
             .with_style(Style {
                 position_type: PositionType::Absolute,
                 bottom: Val::Px(185.0),
-                left: Val::Px(105.0),
+                left: Val::Px(80.0),
                 ..default()
             })
         ));
@@ -331,12 +331,13 @@ fn hide_skill_tree_ui(
 fn toggle_skill_tree_ui(
     state: Res<State<GameState>>,
     mut next_state: ResMut<NextState<GameState>>,
-    input: Res<ButtonInput<KeyCode>>,) {
+    input: Res<ButtonInput<KeyCode>>,
+) {
         if input.just_pressed(KeyCode::KeyQ) {
             match state.get() {
                 GameState::InGame => next_state.set(GameState::SkillTreeMenu),
                 GameState::SkillTreeMenu => next_state.set(GameState::InGame),
-                GameState::BattleMode => next_state.set(GameState::SkillTreeMenu),
+                GameState::BattleMode => next_state.set(GameState::BattleMode),
             }
         }
 }
@@ -391,20 +392,23 @@ fn spend_ability_point(
     mut player_query: Query<&mut PlayerStats, With<Player>>,
 ) {
     if let Ok(mut player_stats) = player_query.get_single_mut() {
-        // Check for key presses and upgrade the appropriate stat
-        if input.just_pressed(KeyCode::KeyF) { //press f to upgrade respect *attack
-            player_stats.attack += 1;
-        } else if input.just_pressed(KeyCode::KeyG) { //g to upgrade magic
-            player_stats.magic += 1;
-        } else if input.just_pressed(KeyCode::KeyH) { //h to upgrade speed
-            player_stats.speed += 1;
-        } else if input.just_pressed(KeyCode::KeyJ) { //j to upgrade max_hp all temporary for now
-            player_stats.max_hp += 10;
-        } else {
-            return; // No valid key pressed, exit early
+        // Check if there are ability points available to spend
+        if player_stats.ability_points > 0 {
+            // Check for key presses and upgrade the appropriate stat
+            if input.just_pressed(KeyCode::KeyF) { //press f to upgrade respect *attack
+                player_stats.attack += 1;
+            } else if input.just_pressed(KeyCode::KeyG) { //g to upgrade magic
+                player_stats.magic += 1;
+            } else if input.just_pressed(KeyCode::KeyH) { //h to upgrade speed
+                player_stats.speed += 1;
+            } else if input.just_pressed(KeyCode::KeyJ) { //j to upgrade max_hp all temporary for now
+                player_stats.max_hp += 10;
+            } else {
+                return; // No valid key pressed, exit early
+            }
+            // Deduct an ability point for every successful upgrade
+            player_stats.ability_points -= 1;
         }
-        // Deduct an ability point for every successful upgrade
-        player_stats.ability_points -= 1;
     }
 }
 
@@ -413,19 +417,22 @@ fn spend_skill_point(
     mut player_query: Query<&mut PlayerStats, With<Player>>,
 ) {
     if let Ok(mut player_stats) = player_query.get_single_mut() {
-        // Check for key presses and upgrade the appropriate stat
-        if input.just_pressed(KeyCode::KeyR) {
-            player_stats.strength += 1;
-        } else if input.just_pressed(KeyCode::KeyT) {
-            player_stats.mgk += 1;
-        } else if input.just_pressed(KeyCode::KeyY) {
-            player_stats.agility += 1;
-        } else if input.just_pressed(KeyCode::KeyU) {
-            player_stats.health += 10;
-        } else {
-            return; // No valid key pressed, exit early
+        // Check if there are skill points available to spend
+        if player_stats.skill_points > 0 {
+            // Check for key presses and upgrade the appropriate stat
+            if input.just_pressed(KeyCode::KeyR) {
+                player_stats.strength += 1;
+            } else if input.just_pressed(KeyCode::KeyT) {
+                player_stats.mgk += 1;
+            } else if input.just_pressed(KeyCode::KeyY) {
+                player_stats.agility += 1;
+            } else if input.just_pressed(KeyCode::KeyU) {
+                player_stats.health += 10;
+            } else {
+                return; // No valid key pressed, exit early
+            }
+            // Deduct an ability point for every successful upgrade
+            player_stats.skill_points -= 1;
         }
-        // Deduct an ability point for every successful upgrade
-        player_stats.skill_points -= 1;
     }
 }

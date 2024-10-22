@@ -7,6 +7,7 @@ mod text_box;
 mod fight_scene;
 mod enemy;
 mod events;
+mod battle;
 
 use map::MapPlugin;
 use player::PlayerPlugin;
@@ -15,6 +16,7 @@ use text_box::TextboxPlugin;
 use fight_scene::FightScenePlugin;
 use enemy::EnemyPlugin;
 use events::EnemyCollisionEvent;
+use battle::BattlePlugin;
 
 const TITLE: &str = "main";
 const WIN_W: f32 = 1280.;
@@ -32,8 +34,8 @@ enum GameState {
 #[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
 enum TextState {
     #[default]
-    TextShown,
     TextHidden,
+    TextShown,
 }
 
 #[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
@@ -64,6 +66,7 @@ fn main() {
         .add_plugins(SkillTreePlugin)
         .add_plugins(FightScenePlugin)
         .add_plugins(EnemyPlugin)
+        .add_plugins(BattlePlugin)
         .add_event::<EnemyCollisionEvent>()
         .add_plugins(TextboxPlugin)
         /*
