@@ -46,33 +46,17 @@ impl Plugin for FightScenePlugin {
         app.add_systems(PostStartup, hide_battle_ui);
         app.add_systems(OnEnter(GameState::BattleMode), show_battle_ui);
         app.add_systems(OnExit(GameState::BattleMode), hide_battle_ui);        
-        app.add_systems(Update, toggle_battle_scene);
         app.add_systems(Update, init_upon_collision);
     }
 }
 
-// toggle the battle scene with 'P'
-fn toggle_battle_scene(
-    state: Res<State<GameState>>,
-    mut next_state: ResMut<NextState<GameState>>,
-    input: Res<ButtonInput<KeyCode>>,) {
-        if input.just_pressed(KeyCode::KeyP) {
-            match state.get() {
-                GameState::InGame => next_state.set(GameState::BattleMode),
-                GameState::BattleMode => next_state.set(GameState::InGame),
-                GameState::SkillTreeMenu => next_state.set(GameState::BattleMode),
-            }
-        }
-}
-
 // open battle scene upon enemy collision (does not close upon re-collision)
-// for development: press p and move character to exit battle scene
 fn init_upon_collision(
     state: Res<State<GameState>>,
     mut next_state: ResMut<NextState<GameState>>,
     mut collision_events: EventReader<EnemyCollisionEvent>,
 ){
-    for event in collision_events.read() {
+    for _event in collision_events.read() {
         match state.get() {
             GameState::InGame => next_state.set(GameState::BattleMode),
             GameState::BattleMode => next_state.set(GameState::BattleMode),
@@ -144,27 +128,27 @@ fn setup_battle_ui(
     ));
 
     // menu text
-    commands.spawn((
-        TextBundle {
-            text: Text::from_section(
-                "1: Attack\n2: Run",
-                TextStyle {
-                    font_size: 40.0,
-                    color: Color::WHITE,
-                    ..default()
-                },
-            ),
-            style: Style {
-                position_type: PositionType::Absolute,
-                left: Val::Px(50.),
-                bottom: Val::Px(50.),
-                ..default()
-            },
-            ..default()
-        },
-        BattleMenuText,
-        FightScene
-    ));
+    // commands.spawn((
+    //     TextBundle {
+    //         text: Text::from_section(
+    //             "1: Attack\n2: Run",
+    //             TextStyle {
+    //                 font_size: 40.0,
+    //                 color: Color::WHITE,
+    //                 ..default()
+    //             },
+    //         ),
+    //         style: Style {
+    //             position_type: PositionType::Absolute,
+    //             left: Val::Px(50.),
+    //             bottom: Val::Px(50.),
+    //             ..default()
+    //         },
+    //         ..default()
+    //     },
+    //     BattleMenuText,
+    //     FightScene
+    // ));
 
     // player health bar background
     commands.spawn((
