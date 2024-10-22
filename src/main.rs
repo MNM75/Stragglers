@@ -3,6 +3,7 @@ use bevy::{prelude::*, window::PresentMode};
 mod map;
 mod player;
 mod skill_tree;
+mod text_box;
 mod fight_scene;
 mod enemy;
 mod events;
@@ -10,6 +11,7 @@ mod events;
 use map::MapPlugin;
 use player::PlayerPlugin;
 use crate::skill_tree::SkillTreePlugin;
+use text_box::TextboxPlugin;
 use fight_scene::FightScenePlugin;
 use enemy::EnemyPlugin;
 use events::EnemyCollisionEvent;
@@ -27,7 +29,22 @@ enum GameState {
     BattleMode,
 }
 
-fn main(){
+#[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
+enum TextState {
+    #[default]
+    TextShown,
+    TextHidden,
+}
+
+#[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
+enum MenuState {
+    #[default]
+    MainMenu,
+    AttackMenu,
+    Text,
+}
+
+fn main() {
     App::new()
         .insert_resource(ClearColor(Color::Srgba(Srgba::gray(0.25))))
         .add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -39,13 +56,16 @@ fn main(){
             }),
             ..default()
         }))
+        .init_state::<TextState>()
         .init_state::<GameState>()
+        .init_state::<MenuState>()
         .add_plugins(MapPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(SkillTreePlugin)
         .add_plugins(FightScenePlugin)
         .add_plugins(EnemyPlugin)
         .add_event::<EnemyCollisionEvent>()
+        .add_plugins(TextboxPlugin)
         /*
             add other plugins here
         */
