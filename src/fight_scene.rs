@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use crate::GameState;
+use crate::events::EnemyCollisionEvent;
 
 use crate::player::Player;
 use crate::WIN_W;
@@ -23,6 +24,9 @@ struct EnemySprite;
 struct BattleBackground;
 
 #[derive(Component)]
+struct BattleMenuText;
+
+#[derive(Component)]
 struct PlayerHealthBar;
 
 #[derive(Component)]
@@ -43,6 +47,7 @@ impl Plugin for FightScenePlugin {
         app.add_systems(OnEnter(GameState::BattleMode), show_battle_ui);
         app.add_systems(OnExit(GameState::BattleMode), hide_battle_ui);        
         app.add_systems(Update, toggle_battle_scene);
+        app.add_systems(Update, init_upon_collision);
     }
 }
 
@@ -58,6 +63,22 @@ fn toggle_battle_scene(
                 GameState::SkillTreeMenu => next_state.set(GameState::BattleMode),
             }
         }
+}
+
+// open battle scene upon enemy collision (does not close upon re-collision)
+// for development: press p and move character to exit battle scene
+fn init_upon_collision(
+    state: Res<State<GameState>>,
+    mut next_state: ResMut<NextState<GameState>>,
+    mut collision_events: EventReader<EnemyCollisionEvent>,
+){
+    for event in collision_events.read() {
+        match state.get() {
+            GameState::InGame => next_state.set(GameState::BattleMode),
+            GameState::BattleMode => next_state.set(GameState::BattleMode),
+            GameState::SkillTreeMenu => next_state.set(GameState::BattleMode),
+        }
+    }
 }
 
 // Set up battle scene UI
@@ -119,6 +140,29 @@ fn setup_battle_ui(
         },
         EnemySprite,
         FightSprites,
+        FightScene
+    ));
+
+    // menu text
+    commands.spawn((
+        TextBundle {
+            text: Text::from_section(
+                "1: Attack\n2: Run",
+                TextStyle {
+                    font_size: 40.0,
+                    color: Color::WHITE,
+                    ..default()
+                },
+            ),
+            style: Style {
+                position_type: PositionType::Absolute,
+                left: Val::Px(50.),
+                bottom: Val::Px(50.),
+                ..default()
+            },
+            ..default()
+        },
+        BattleMenuText,
         FightScene
     ));
 

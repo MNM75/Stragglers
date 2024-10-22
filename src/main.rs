@@ -1,16 +1,20 @@
 use bevy::{prelude::*, window::PresentMode};
 
-mod fight_scene;
 mod map;
 mod player;
 mod skill_tree;
 mod text_box;
+mod fight_scene;
+mod enemy;
+mod events;
 
-use fight_scene::FightScenePlugin;
 use map::MapPlugin;
 use player::PlayerPlugin;
-use skill_tree::SkillTreePlugin;
+use crate::skill_tree::SkillTreePlugin;
 use text_box::TextboxPlugin;
+use fight_scene::FightScenePlugin;
+use enemy::EnemyPlugin;
+use events::EnemyCollisionEvent;
 
 const TITLE: &str = "main";
 const WIN_W: f32 = 1280.;
@@ -59,9 +63,12 @@ fn main() {
         .add_plugins(PlayerPlugin)
         .add_plugins(SkillTreePlugin)
         .add_plugins(FightScenePlugin)
+        .add_plugins(EnemyPlugin)
+        .add_event::<EnemyCollisionEvent>()
         .add_plugins(TextboxPlugin)
         /*
             add other plugins here
         */
         .run();
+
 }
