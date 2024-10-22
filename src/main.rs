@@ -9,7 +9,7 @@ mod events;
 
 use map::MapPlugin;
 use player::PlayerPlugin;
-use skill_tree::SkillTreePlugin;
+use crate::skill_tree::SkillTreePlugin;
 use fight_scene::FightScenePlugin;
 use enemy::EnemyPlugin;
 use events::EnemyCollisionEvent;
