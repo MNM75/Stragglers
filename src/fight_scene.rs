@@ -23,9 +23,6 @@ struct EnemySprite;
 struct BattleBackground;
 
 #[derive(Component)]
-struct BattleMenuText;
-
-#[derive(Component)]
 struct PlayerHealthBar;
 
 #[derive(Component)]
@@ -122,29 +119,6 @@ fn setup_battle_ui(
         },
         EnemySprite,
         FightSprites,
-        FightScene
-    ));
-
-    // menu text
-    commands.spawn((
-        TextBundle {
-            text: Text::from_section(
-                "1: Attack\n2: Run",
-                TextStyle {
-                    font_size: 40.0,
-                    color: Color::WHITE,
-                    ..default()
-                },
-            ),
-            style: Style {
-                position_type: PositionType::Absolute,
-                left: Val::Px(50.),
-                bottom: Val::Px(50.),
-                ..default()
-            },
-            ..default()
-        },
-        BattleMenuText,
         FightScene
     ));
 

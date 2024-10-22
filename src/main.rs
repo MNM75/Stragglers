@@ -4,11 +4,13 @@ mod fight_scene;
 mod map;
 mod player;
 mod skill_tree;
+mod text_box;
 
 use fight_scene::FightScenePlugin;
 use map::MapPlugin;
 use player::PlayerPlugin;
 use skill_tree::SkillTreePlugin;
+use text_box::TextboxPlugin;
 
 const TITLE: &str = "main";
 const WIN_W: f32 = 1280.;
@@ -23,6 +25,21 @@ enum GameState {
     BattleMode,
 }
 
+#[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
+enum TextState {
+    #[default]
+    TextShown,
+    TextHidden,
+}
+
+#[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
+enum MenuState {
+    #[default]
+    MainMenu,
+    AttackMenu,
+    Text,
+}
+
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::Srgba(Srgba::gray(0.25))))
@@ -35,11 +52,14 @@ fn main() {
             }),
             ..default()
         }))
+        .init_state::<TextState>()
         .init_state::<GameState>()
+        .init_state::<MenuState>()
         .add_plugins(MapPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(SkillTreePlugin)
         .add_plugins(FightScenePlugin)
+        .add_plugins(TextboxPlugin)
         /*
             add other plugins here
         */
