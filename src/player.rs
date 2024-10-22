@@ -79,7 +79,48 @@ impl Plugin for PlayerPlugin{
 
 }
     
-fn init_player(
+    #[derive(Component)]
+    pub struct PlayerStats {
+        pub attack: u32,
+        pub magic: u32,
+        pub speed: u32,
+        pub max_hp: u32,
+        pub hp: u32,
+        pub skill_points: u32,
+        pub ability_points: u32,
+        pub strength: u32,
+        pub mgk: u32,
+        pub agility: u32,
+        pub health: u32,
+    }
+
+    impl PlayerStats {
+        pub fn new() -> Self {
+            Self {
+                attack: 1,
+                magic: 1,
+                speed: 1,
+                max_hp: 10,
+                hp: 10,
+                skill_points: 0,
+                ability_points: 8,
+                strength: 0,
+                mgk: 0,
+                agility: 0,
+                health: 0,
+            }
+        }
+
+        pub fn calculate_max_hp(&self) -> u32 {
+            self.hp * 10  // Example: Each point in health adds 10 to max HP
+        }
+
+        pub fn update_max_hp(&mut self) {
+            self.max_hp = self.calculate_max_hp();
+        }        
+    }
+
+pub fn init_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
@@ -89,6 +130,7 @@ fn init_player(
     let pc_layout = TextureAtlasLayout::from_grid(UVec2::new(82, 144), 4, 4, None, None);
     let pc_layout_len = pc_layout.textures.len();
     let pc_layout_handle = texture_atlases.add(pc_layout);
+
     commands.spawn((
         SpriteBundle {
             texture: pc_sheet_handle,
@@ -106,6 +148,7 @@ fn init_player(
         AnimationFrameCount(4),
         Velocity::new(),
         Player,
+            PlayerStats::new(),
     ));
 }
 
