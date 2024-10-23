@@ -102,7 +102,7 @@ impl Plugin for PlayerPlugin{
                 speed: 1,
                 max_hp: 10,
                 hp: 10,
-                skill_points: 0,
+                skill_points: 4,
                 ability_points: 8,
                 strength: 0,
                 mgk: 0,
