@@ -2,7 +2,10 @@ use bevy::prelude::*;
 use crate::GameState;
 
 use crate::player::PlayerStats;
+
 use crate::enemy::EnemyStats;
+
+
 use crate::player::Player;
 use crate::enemy::Enemy;
 use crate::enemy::despawn_closest_enemy;
@@ -29,8 +32,12 @@ fn battle_input(
     state: Res<State<GameState>>,
     mut next_state: ResMut<NextState<GameState>>,
     input: Res<ButtonInput<KeyCode>>,
+
     mut player_stat_query: Query<&mut PlayerStats, With<Player>>,
     mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
+
+    player_stat_query: Query<&mut PlayerStats, With<Player>>,
+
     // later: get the turn state
 
     /* for enemy despawn */
@@ -39,6 +46,7 @@ fn battle_input(
     player_query: Query<&Transform, With<Player>>,
 ) {
     // later: check it's the player's turn
+
     if input.just_pressed(KeyCode::Digit1) { //later on we can just if the different attacks there are and query player stats.
         if let Ok(mut enemy_stats) = enemy_stat_query.get_single_mut() {
             // Simple attack that deals 10 damage to the enemy
@@ -53,6 +61,11 @@ fn battle_input(
                 despawn_closest_enemy(commands, enemy_query, player_query);  // Despawn the enemy if defeated
             }
         }
+
+    if input.just_pressed(KeyCode::Digit1) {
+        info!("attacked! but it had no effect...");
+        /* attack */
+
         // later: change turn state here
     }
     else if input.just_pressed(KeyCode::Digit2) {
