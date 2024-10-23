@@ -205,28 +205,22 @@ fn move_player(
     let (mut pt, mut pv, mut texture_atlas) = player.single_mut();
 
     let mut deltav = Vec2::splat(0.);
-    //if input.just_pressed(KeyCode::KeyA){
-        // texture_atlas.index = 4;
-    //}
+
 
     if input.pressed(KeyCode::KeyA) {
         deltav.x -= 1.;
-        texture_atlas.index = 4;
     }
 
     if input.pressed(KeyCode::KeyD) {
         deltav.x += 1.;
-        //texture_atlas.index = 0;
     }
 
     if input.pressed(KeyCode::KeyW) {
         deltav.y += 1.;
-        texture_atlas.index = 12;
     }
 
     if input.pressed(KeyCode::KeyS) {
         deltav.y -= 1.;
-        texture_atlas.index = 8;
     }
 
     let deltat = time.delta_seconds();
