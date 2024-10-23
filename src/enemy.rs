@@ -14,6 +14,27 @@ pub struct Enemy{
     right_boundary: f32,
 }
 
+#[derive(Component)]
+pub struct EnemyStats {
+    pub attack: u32,
+    pub magic: u32,
+    pub speed: u32,
+    pub max_hp: u32,
+    pub hp: u32,
+}
+
+impl EnemyStats {
+    pub fn new() -> Self {
+        Self {
+            attack: 1,
+            magic: 1,
+            speed: 1,
+            max_hp: 10,
+            hp: 10,
+        }
+    }
+}
+
 pub struct EnemyPlugin;
     
 impl Plugin for EnemyPlugin{
@@ -55,6 +76,7 @@ pub fn spawn_enemy(
             left_boundary,
             right_boundary,
         },
+        EnemyStats::new(),
     ));
 }
 
