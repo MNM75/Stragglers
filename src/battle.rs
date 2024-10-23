@@ -59,12 +59,7 @@ fn battle_input(
             }
         }
 
-    if input.just_pressed(KeyCode::Digit1) {
-        info!("attacked! but it had no effect...");
-        /* attack */
 
-        // later: change turn state here
-    }
     else if input.just_pressed(KeyCode::Digit2) {
         info!("magic attacked! but it had no effect...");
         /* magic */
