@@ -74,8 +74,8 @@ fn setup_battle_ui(
     let enemy_health = 0.5;    
 
     let bg_texture_handle = asset_server.load("fightBackground.png");
-    let player_texture_handle = asset_server.load("fightPlayer.png");
-    let enemy_texture_handle = asset_server.load("fightEnemy.png");
+    let player_texture_handle = asset_server.load("L_static.png");
+    let enemy_texture_handle = asset_server.load("enemyPlaceHolder.png");
     let healthbar_background_handle = asset_server.load("healthbarBackground.png");
     let healthbar_handle = asset_server.load("healthbar.png");
 
@@ -101,7 +101,7 @@ fn setup_battle_ui(
             texture: player_texture_handle,
             transform: Transform {
                 translation: Vec3::new(-400., -100., 1.), // position player sprite
-                scale: Vec3::new(0.5, 0.5, 1.0),         // adjust player sprite size
+                scale: Vec3::new(2.5, 2.5, 1.0),         // adjust player sprite size
                 ..default()
             },
             ..default()
@@ -117,7 +117,7 @@ fn setup_battle_ui(
             texture: enemy_texture_handle,
             transform: Transform {
                 translation: Vec3::new(400., -100., 1.), // position enemy sprite
-                scale: Vec3::new(0.5, 0.5, 1.0),        // adjust enemy sprite size
+                scale: Vec3::new(2.5, 2.5, 1.0),        // adjust enemy sprite size
                 ..default()
             },
             ..default()
