@@ -114,6 +114,7 @@ fn load_skill_tree_ui(
         // Strength
         commands.spawn((
             SkillTreeUIComponent,
+            StatText { stat_type: StatType::Strength },
             TextBundle::from_section(
                 player_stats.strength.to_string(),
                 TextStyle {
@@ -132,6 +133,7 @@ fn load_skill_tree_ui(
         // Magic
         commands.spawn((
             SkillTreeUIComponent,
+            StatText { stat_type: StatType::Mgk },
             TextBundle::from_section(
                 player_stats.mgk.to_string(),
                 TextStyle {
@@ -150,6 +152,7 @@ fn load_skill_tree_ui(
         // Agility
         commands.spawn((
             SkillTreeUIComponent,
+            StatText { stat_type: StatType::Agility },
             TextBundle::from_section(
                 player_stats.agility.to_string(),
                 TextStyle {
@@ -168,6 +171,7 @@ fn load_skill_tree_ui(
         // Health
         commands.spawn((
             SkillTreeUIComponent,
+            StatText { stat_type: StatType::Health },
             TextBundle::from_section(
                 player_stats.health.to_string(),
                 TextStyle {
@@ -207,6 +211,7 @@ fn load_skill_tree_ui(
         // atk
         commands.spawn((
             SkillTreeUIComponent,
+            StatText { stat_type: StatType::Attack },
             TextBundle::from_section(
                 player_stats.attack.to_string(),
                 TextStyle {
@@ -243,6 +248,7 @@ fn load_skill_tree_ui(
         // spd
         commands.spawn((
             SkillTreeUIComponent,
+            StatText { stat_type: StatType::Speed },
             TextBundle::from_section(
                 player_stats.speed.to_string(),
                 TextStyle {
@@ -261,6 +267,7 @@ fn load_skill_tree_ui(
         // matk
         commands.spawn((
             SkillTreeUIComponent,
+            StatText { stat_type: StatType::Magic },
             TextBundle::from_section(
                 player_stats.magic.to_string(),
                 TextStyle {

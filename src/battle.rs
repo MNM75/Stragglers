@@ -47,8 +47,7 @@ fn battle_input(
 
     if input.just_pressed(KeyCode::Digit1) { //later on we can just if the different attacks there are and query player stats.
         if let Ok(mut enemy_stats) = enemy_stat_query.get_single_mut() {
-            // Simple attack that deals 10 damage to the enemy
-            let base_damage = 10;
+            let base_damage = 5;
             enemy_stats.hp = enemy_stats.hp.saturating_sub(base_damage);
             
             info!("Enemy attacked for {} damage! Enemy HP is now: {}", base_damage, enemy_stats.hp);
@@ -58,8 +57,8 @@ fn battle_input(
                 despawn_closest_enemy(commands, enemy_query, player_query);  // Despawn the enemy if defeated
             }
         }
-
-
+        enemy_attack(player_stat_query);
+    }   
     else if input.just_pressed(KeyCode::Digit2) {
         info!("magic attacked! but it had no effect...");
         /* magic */
@@ -82,7 +81,6 @@ fn battle_input(
     /* else do nothing until player selects a valid battle option */
     }
 }
-}
 
 fn battle_heal(
     mut player_stat_query: Query<&mut PlayerStats, With<Player>>,
@@ -92,5 +90,15 @@ fn battle_heal(
         let max_hp = player_stats.max_hp;
         let heal_amt = 1; // get the heal amount (just a flat 1 hp for now)
         player_stats.hp = current_hp + heal_amt.clamp(0, max_hp - current_hp);
+    }
+}
+
+fn enemy_attack(
+    mut player_stat_query: Query<&mut PlayerStats, With<Player>>,
+) {
+    if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
+        let enemy_damage = 5;
+        player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
+        info!("Enemy attacked! Player HP is now: {}", player_stats.hp);
     }
 }
