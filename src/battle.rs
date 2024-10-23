@@ -36,8 +36,6 @@ fn battle_input(
     mut player_stat_query: Query<&mut PlayerStats, With<Player>>,
     mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
 
-    player_stat_query: Query<&mut PlayerStats, With<Player>>,
-
     // later: get the turn state
 
     /* for enemy despawn */
@@ -55,7 +53,6 @@ fn battle_input(
             
             info!("Enemy attacked for {} damage! Enemy HP is now: {}", base_damage, enemy_stats.hp);
 
-            // Optional: check if the enemy is dead (HP <= 0) and handle the result
             if enemy_stats.hp <= 0 {
                 info!("Enemy defeated!");
                 despawn_closest_enemy(commands, enemy_query, player_query);  // Despawn the enemy if defeated
@@ -89,6 +86,7 @@ fn battle_input(
         despawn_closest_enemy(commands, enemy_query, player_query);
     /* else do nothing until player selects a valid battle option */
     }
+}
 }
 
 fn battle_heal(
