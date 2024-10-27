@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use rand::prelude::*;
 use crate::enemy::spawn_enemy;
 const TILE_SIZE: u32 = 144;
+const DOOR_SIZE: u32 = 296;
 
 #[derive(Component)]
 struct Tile;
@@ -11,6 +12,9 @@ struct Background;
 
 #[derive(Component)]
 pub struct Wall;
+
+#[derive(Component)]
+pub struct Door;
 
 pub struct MapPlugin;
 
@@ -139,12 +143,18 @@ fn create_room(
         second_room_start_position,
     );
 
-   /*  create_second_room(
-        &mut commands,
-        &asset_server,
-        &mut texture_atlases,
-        second_room_start_position,
-    ); */
+    let second_room_center = second_room_start_position + Vec3::new(
+        (10.0 * TILE_SIZE as f32) / 2.0, 
+        (10.0 * TILE_SIZE as f32) / 2.0, 
+        10.0,
+    );
+
+    spawn_door(
+        &mut commands, 
+        &asset_server, 
+        &mut texture_atlases, 
+        second_room_center,
+    );
 }
 
 fn create_hallway(
@@ -307,4 +317,32 @@ fn create_second_room(
             t += Vec3::new(TILE_SIZE as f32, 0., 0.); // move to the right for the next tile
         }
     }
+}
+
+fn spawn_door(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
+    position: Vec3,
+){
+    // load textures and create texture atlases
+    let door_texture_handle = asset_server.load("enddoor.png");
+    let door_layout = TextureAtlasLayout::from_grid(UVec2::splat(DOOR_SIZE), 1, 1, None, None);
+    let door_layout_handle = texture_atlases.add(door_layout);
+
+    commands.spawn((
+        SpriteBundle {
+            texture: door_texture_handle.clone(),
+            transform: Transform {
+                translation: position,
+                ..default()
+            },
+            ..default()
+        },
+        TextureAtlas {
+            index: 0, 
+            layout: door_layout_handle.clone(),
+        },
+        Door
+    ));
 }

@@ -345,6 +345,7 @@ fn toggle_skill_tree_ui(
                 GameState::InGame => next_state.set(GameState::SkillTreeMenu),
                 GameState::SkillTreeMenu => next_state.set(GameState::InGame),
                 GameState::BattleMode => next_state.set(GameState::BattleMode),
+                GameState::EndCredits => next_state.set(GameState::EndCredits),
             }
         }
 }

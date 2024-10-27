@@ -61,6 +61,7 @@ fn init_upon_collision(
             GameState::InGame => next_state.set(GameState::BattleMode),
             GameState::BattleMode => next_state.set(GameState::BattleMode),
             GameState::SkillTreeMenu => next_state.set(GameState::BattleMode),
+            GameState::EndCredits => next_state.set(GameState::EndCredits),
         }
     }
 }

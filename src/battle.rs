@@ -100,6 +100,7 @@ fn battle_input(
                 GameState::BattleMode => next_state.set(GameState::InGame),
                 GameState::InGame => next_state.set(GameState::InGame),
                 GameState::SkillTreeMenu => next_state.set(GameState::SkillTreeMenu), // no op?
+                GameState::EndCredits => next_state.set(GameState::EndCredits),
             }
             despawn_closest_enemy(commands, enemy_query, player_query);
         /* else do nothing until player selects a valid battle option */
