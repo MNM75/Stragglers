@@ -8,6 +8,7 @@ mod fight_scene;
 mod enemy;
 mod events;
 mod battle;
+mod end_credits;
 
 use map::MapPlugin;
 use player::PlayerPlugin;
@@ -16,7 +17,9 @@ use text_box::TextboxPlugin;
 use fight_scene::FightScenePlugin;
 use enemy::EnemyPlugin;
 use events::EnemyCollisionEvent;
+use events::EndGameEvent;
 use battle::BattlePlugin;
+use end_credits::EndCreditsPlugin;
 
 const TITLE: &str = "main";
 const WIN_W: f32 = 1280.;
@@ -29,6 +32,7 @@ enum GameState {
     InGame,
     SkillTreeMenu,
     BattleMode,
+    EndCredits,
 }
 
 #[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
@@ -68,7 +72,9 @@ fn main() {
         .add_plugins(EnemyPlugin)
         .add_plugins(BattlePlugin)
         .add_event::<EnemyCollisionEvent>()
+        .add_event::<EndGameEvent>()
         .add_plugins(TextboxPlugin)
+        .add_plugins(EndCreditsPlugin)
         /*
             add other plugins here
         */
