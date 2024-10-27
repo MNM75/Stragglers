@@ -1,5 +1,6 @@
 use bevy::{
     color::palettes::css::BLACK,
+    color::palettes::css::WHITE,
     prelude::*
 };
 
@@ -14,6 +15,8 @@ use crate::player::LEVEL_H;
 
 #[derive(Component)]
 struct SkillTreeUIBackground;
+#[derive(Component)]
+struct SkillTreeUISkeleton;
 #[derive(Component)]
 struct SkillTreeUIComponent;
 
@@ -64,6 +67,17 @@ fn load_skill_tree_ui(
             SkillTreeUIComponent,
             SpriteBundle {
             texture: asset_server.load("skillTreeUI.png"),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        // skill tree skeleton
+        commands.spawn((
+            SkillTreeUISkeleton,
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: asset_server.load("skillTreeSkeleton.png"),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
             }
@@ -301,14 +315,35 @@ fn load_skill_tree_ui(
                 ..default()
             }),
         ));
+
+        // exit text  ------------------------------------------------------------
+        commands.spawn((
+            SkillTreeUIComponent,
+            TextBundle::from_section(
+                "Press 'Q' to exit",
+                TextStyle {
+                    font_size: 20.0,
+                    color: bevy::prelude::Color::Srgba(WHITE),
+                    ..default()
+                },
+            )
+            .with_style(Style {
+                position_type: PositionType::Absolute,
+                top: Val::Px(10.0),
+                right: Val::Px(10.0),
+                ..default()
+            })
+        ));
     }
 }
 
 fn show_skill_tree_ui(
     mut commands: Commands,
     query: Query<Entity, With<SkillTreeUIComponent>>,
-    mut background: Query<&mut Transform, With<SkillTreeUIBackground>>,
-    player: Query<&Transform, (With<Player>, Without<SkillTreeUIBackground>)>,) // an &Transform with <Player> would not have <SkillTreeUIBackground> applied by user logic, but the Without<T> is included to not cause a panic and crash the game
+    mut skeleton: Query<&mut Transform, (With<SkillTreeUISkeleton>, Without<SkillTreeUIBackground>)>,
+    mut background: Query<&mut Transform, (With<SkillTreeUIBackground>, Without<SkillTreeUISkeleton>)>,
+    player: Query<&Transform, (With<Player>, Without<SkillTreeUIBackground>, Without<SkillTreeUISkeleton>)>,)
+    // an &Transform with <...> would not have <SkillTreeUI...> applied by user logic, but the Without<T> is included to not cause a panic and crash the game
 {
     // makes the skill tree UI visible
     for entity in query.iter() {
@@ -318,12 +353,17 @@ fn show_skill_tree_ui(
     // centers the skill tree on the center of the screen (based on player location)
     let pt = player.single();
     let mut bt = background.single_mut();
+    let mut st = skeleton.single_mut();
     let x_bound = LEVEL_W / 2. - WIN_W / 2.;
     let y_bound = LEVEL_H / 2. - WIN_H / 2.;
 
     bt.translation.x = pt.translation.x.clamp(-x_bound, x_bound);   // same logic as camera/player movement
     bt.translation.y = pt.translation.y.clamp(-y_bound, y_bound);   // same logic as camera/player movement
     bt.translation.z = pt.translation.z + 1.;
+
+    st.translation.x = pt.translation.x.clamp(-x_bound, x_bound) + 120.;   // same logic as camera/player movement
+    st.translation.y = pt.translation.y.clamp(-y_bound, y_bound);   // same logic as camera/player movement
+    st.translation.z = pt.translation.z + 2.;
 }
 
 fn hide_skill_tree_ui(
