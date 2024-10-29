@@ -19,7 +19,7 @@ struct SkillTreeUIBackground;
 struct SkillTreeUISkeleton;
 #[derive(Component)]
 struct SkillTreeUINode {
-    unlocked: bool,  // locked: false, unlocked: true
+    unlocked: bool,
     index: u32,
 }
 #[derive(Component)]
@@ -44,6 +44,9 @@ enum StatType {
     Health,
 }
 
+// #[derive(Event)]
+// struct UnlockNodeEvent(SkillTreeUINode);
+
 pub struct SkillTreePlugin;
 
 impl Plugin for SkillTreePlugin{
@@ -52,6 +55,7 @@ impl Plugin for SkillTreePlugin{
         app.add_systems(PostStartup, hide_skill_tree_ui);
         app.add_systems(Update, toggle_skill_tree_ui);
         app.add_systems(Update, update_skill_tree_ui);
+        app.add_systems(Update, unlock_skill_tree_nodes.run_if(in_state(GameState::SkillTreeMenu)));
         app.add_systems(Update, spend_ability_point.run_if(in_state(GameState::SkillTreeMenu)));
         app.add_systems(Update, spend_skill_point.run_if(in_state(GameState::SkillTreeMenu)));
         app.add_systems(OnEnter(GameState::SkillTreeMenu), show_skill_tree_ui);
@@ -793,8 +797,57 @@ fn spend_skill_point(
     }
 }
 
+fn unlock_skill_tree_nodes(
+    buttons: Res<ButtonInput<MouseButton>>,
+    window: Query<&Window>,
+    mut sprites: Query<(&Transform, &Handle<Image>), (With<Sprite>, With<SkillTreeUINode>)>,
+    assets: Res<Assets<Image>>,
+    cameras: Query<(&Camera, &GlobalTransform)>,
+    // mut ev_unlock_node: EventWriter<UnlockNodeEvent>,
+    // nodes: Query<(Entity, &Sprite), With<SkillTreeUINode>>,
+) {
+    // get node bounds
+    // let mut arr: [(i32, i32, i32, i32); 18];
+    // arr[0] = ();
+
+    let (camera, position) = cameras.single();
+    let mut i = 0;
+
+    // for each sprite...
+    for (transform, image_handle) in &mut sprites {
+        // get the (rectangular) bounds of the sprite
+        let image_size = assets.get(image_handle).unwrap().size_f32();
+        let scaled = image_size * transform.scale.truncate();
+        let bounds = Rect::from_center_size(
+            transform.translation.truncate(),
+            scaled
+        );
+
+        // get the cursor location in world coordinates
+        if let Some(p) = window.single().cursor_position()
+            .and_then(|cursor| camera.viewport_to_world(position, cursor))
+            .map(|ray| ray.origin.truncate())
+        {
+            // if the cursor location is within the (rectangular) bounds of one of the nodes and the mouse is clicked...
+            if p.x > bounds.min.x 
+            && p.x < bounds.max.x 
+            && p.y > bounds.min.y 
+            && p.y < bounds.max.y 
+            && buttons.just_pressed(MouseButton::Left)
+            {
+                // unlock the node
+                info!("node unlocked");
+                //ev_unlock_node.send(UnlockNodeEvent());
+            }
+        }
+    }
+}
+
 // fn update_skill_tree_nodes(
-//     // mouse
+//     mut ev_unlock_node: EventReader<UnlockNodeEvent>,
 // ) {
-//     // if node clicked on, change to unlocked
+    
+//     for ev in ev_unlock_node.read() {
+//         let index = ev.;
+//     }
 // }
