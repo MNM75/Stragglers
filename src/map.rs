@@ -1,6 +1,10 @@
+use crate::enemy::spawn_enemy;
+use std::collections::HashSet;
+
 use bevy::prelude::*;
 use rand::prelude::*;
 const TILE_SIZE: u32 = 144;
+const DOOR_SIZE: u32 = 296;
 
 #[derive(Component)]
 struct Tile;
@@ -10,6 +14,9 @@ struct Background;
 
 #[derive(Component)]
 pub struct Wall;
+
+#[derive(Component)]
+pub struct Door;
 
 pub struct MapPlugin;
 
@@ -137,12 +144,19 @@ fn create_room(
         second_room_start_position,
     );
 
-    /*  create_second_room(
+    let second_room_center = second_room_start_position
+        + Vec3::new(
+            (10.0 * TILE_SIZE as f32) / 2.0,
+            (10.0 * TILE_SIZE as f32) / 2.0,
+            10.0,
+        );
+
+    spawn_door(
         &mut commands,
         &asset_server,
         &mut texture_atlases,
-        second_room_start_position,
-    ); */
+        second_room_center,
+    );
 }
 
 fn create_hallway(
@@ -210,6 +224,29 @@ fn create_hallway(
         t.x = start_position.x; // reset x to the starting x position
         t.y -= TILE_SIZE as f32; // move down for the next row
     }
+
+    ////// spawning enemy at random point in hallway //////
+    let random_x = start_position.x
+        + random::<f32>()
+            * ((start_position.x + HALLWAY_COLUMNS as f32 * TILE_SIZE as f32) - start_position.x);
+    let random_y = start_position.y
+        + random::<f32>()
+            * ((start_position.y - (HALLWAY_ROWS - 1) as f32 * TILE_SIZE as f32)
+                - start_position.y);
+    let enemy_position = Vec3::new(random_x, random_y, 1.0);
+    spawn_enemy(commands, asset_server, texture_atlases, enemy_position);
+
+    ////// spawning enemy at random point in hallway //////
+    let new_rand: usize = random();
+    let random_x = start_position.x
+        + random::<f32>()
+            * ((start_position.x + HALLWAY_COLUMNS as f32 * TILE_SIZE as f32) - start_position.x);
+    let random_y = start_position.y
+        + random::<f32>()
+            * ((start_position.y - (HALLWAY_ROWS - 1) as f32 * TILE_SIZE as f32)
+                - start_position.y);
+    let enemy_position = Vec3::new(random_x, random_y, 1.0);
+    spawn_enemy(commands, asset_server, texture_atlases, enemy_position);
 
     Vec3::new(
         start_position.x + (HALLWAY_COLUMNS as f32 * TILE_SIZE as f32),
@@ -301,4 +338,93 @@ fn create_second_room(
             t += Vec3::new(TILE_SIZE as f32, 0., 0.); // move to the right for the next tile
         }
     }
+}
+
+// second room that opens on the left side to connect the hallway, similar to the first room.
+// maze is procedurally generated using Wilson's algorithm.
+fn maze(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
+    start_position: Vec3,
+) {
+    // load textures and create texture atlases
+    // let tile_sheet_handle = asset_server.load("mossTiles.png");
+    let tile_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 2, 2, None, None);
+    let tile_layout_len = tile_layout.textures.len();
+    let tile_layout_handle = texture_atlases.add(tile_layout);
+
+    //let wall_sheet_handle = asset_server.load("wall.png");
+    let wall_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
+    let wall_layout_len = wall_layout.textures.len();
+    let wall_layout_handle = texture_atlases.add(wall_layout);
+
+    ////////////////////////////////////// IMPLEMENTATION OF WILSON'S ALGORITHM //////////////////////////////////////
+    const ROOM_WIDTH: usize = 10; // width in tiles
+    const ROOM_HEIGHT: usize = 9; // height in tiles
+
+    // Create a 2D vector to represent the room's grid
+    let mut grid = vec![vec![false; ROOM_WIDTH]; ROOM_HEIGHT];
+
+    // Randomly choose a starting point
+    let start_x = random::<usize>() % ROOM_WIDTH;
+    let start_y = random::<usize>() % ROOM_HEIGHT;
+
+    // list of cells making up the maze
+    let mut maze: Vec<(usize, usize)> = Vec::new();
+
+    // Set to keep track of visited cells
+    let mut visited: HashSet<(usize, usize)> = HashSet::new();
+
+    let mut direction: Vec<(usize)> = Vec::new(); // vector to track each cells direction
+
+    // Add the starting point to the maze
+    maze.push((start_x, start_y));
+    visited.insert((start_x, start_y));
+    grid[start_y][start_x] = true; // Mark the starting cell as part of the maze
+
+    let mut rng = thread_rng(); // Random number generator
+
+    // Explore until the maze is complete
+    while maze.len() < ROOM_WIDTH * ROOM_HEIGHT {
+        // Randomly select a cell not in the maze
+        let (new_x, new_y) = loop {
+            let random_x = rng.gen_range(0..ROOM_WIDTH);
+            let random_y = rng.gen_range(0..ROOM_HEIGHT);
+            if !visited.contains(&(random_x, random_y)) {
+                break (random_x, random_y);
+            }
+        };
+
+        let mut current_cell = (new_x, new_y);
+        let mut path = vec![current_cell]; // Track the path taken
+    }
+}
+
+fn spawn_door(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
+    position: Vec3,
+) {
+    // load textures and create texture atlases
+    let door_texture_handle = asset_server.load("enddoor.png");
+    let door_layout = TextureAtlasLayout::from_grid(UVec2::splat(DOOR_SIZE), 1, 1, None, None);
+    let door_layout_handle = texture_atlases.add(door_layout);
+
+    commands.spawn((
+        SpriteBundle {
+            texture: door_texture_handle.clone(),
+            transform: Transform {
+                translation: position,
+                ..default()
+            },
+            ..default()
+        },
+        TextureAtlas {
+            index: 0,
+            layout: door_layout_handle.clone(),
+        },
+        Door,
+    ));
 }

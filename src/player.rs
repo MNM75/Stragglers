@@ -1,8 +1,12 @@
-use crate::map::Wall;
-use crate::GameState;
-use crate::WIN_H;
-use crate::WIN_W;
 use bevy::prelude::*;
+use crate::map::Wall;
+use crate::map::Door;
+use crate::enemy::Enemy;
+use crate::events::EnemyCollisionEvent;
+use crate::events::EndGameEvent;
+use crate::GameState;
+use crate::WIN_W;
+use crate::WIN_H; 
 
 const TILE_SIZE: u32 = 144;
 
@@ -64,24 +68,61 @@ impl From<Vec2> for Velocity {
     fn from(velocity: Vec2) -> Self {
         Self { velocity }
     }
-}
+}    
 pub struct PlayerPlugin;
 
-impl Plugin for PlayerPlugin {
-    fn build(&self, app: &mut App) {
+impl Plugin for PlayerPlugin{
+    fn build(&self, app: &mut App){
         app.add_systems(Startup, init_player)
-            .add_systems(Update, move_player.run_if(in_state(GameState::InGame)))
-            .add_systems(Update, animate_player.after(move_player))
-            .add_systems(
-                Update,
-                move_camera
-                    .after(move_player)
-                    .run_if(in_state(GameState::InGame)),
-            );
+        .add_systems(Update, move_player.run_if(in_state(GameState::InGame)))
+        .add_systems(Update, animate_player.after(move_player))
+        .add_systems(Update, move_camera.after(move_player).run_if(in_state(GameState::InGame)));
     }
-}
 
-fn init_player(
+}
+    
+    #[derive(Component)]
+    pub struct PlayerStats {
+        pub attack: u32,
+        pub magic: u32,
+        pub speed: u32,
+        pub max_hp: u32,
+        pub hp: u32,
+        pub skill_points: u32,
+        pub ability_points: u32,
+        pub strength: u32,
+        pub mgk: u32,
+        pub agility: u32,
+        pub health: u32,
+    }
+
+    impl PlayerStats {
+        pub fn new() -> Self {
+            Self {
+                attack: 1,
+                magic: 1,
+                speed: 1,
+                max_hp: 10,
+                hp: 10,
+                skill_points: 4,
+                ability_points: 8,
+                strength: 0,
+                mgk: 0,
+                agility: 0,
+                health: 0,
+            }
+        }
+
+        pub fn calculate_max_hp(&self) -> u32 {
+            self.hp * 10  // Example: Each point in health adds 10 to max HP
+        }
+
+        pub fn update_max_hp(&mut self) {
+            self.max_hp = self.calculate_max_hp();
+        }        
+    }
+
+pub fn init_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
@@ -109,8 +150,10 @@ fn init_player(
         AnimationFrameCount(4),
         Velocity::new(),
         Player,
+            PlayerStats::new(),
     ));
 }
+
 fn animate_player(
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
@@ -125,29 +168,48 @@ fn animate_player(
     >,
 ) {
     let (v, mut texture_atlas, mut timer, frame_count) = player.single_mut();
+    let mut counter: usize = 0;
+    let mut direction = 8;
 
+    if input.pressed(KeyCode::KeyD) { //move right
+        direction = 0;
+    }
+    if input.pressed(KeyCode::KeyA) { //move left
+        direction = 4;
+    }
+    if input.pressed(KeyCode::KeyS) { //move down
+        direction = 8;
+    }
+    if input.pressed(KeyCode::KeyW) { //move up
+        direction = 12;
+    }
+   
     if v.velocity.cmpne(Vec2::ZERO).any() {
         timer.tick(time.delta());
 
         if timer.just_finished() {
-            texture_atlas.index = (texture_atlas.index + 1) % frame_count.0; // Access the inner usize
+        counter = counter +1;
+        texture_atlas.index = (texture_atlas.index + counter) % **frame_count + direction;
         }
     }
 }
+
 
 fn move_player(
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
     //mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     wall_query: Query<&Transform, (With<Wall>, Without<Player>)>,
-    mut player: Query<
-        (&mut Transform, &mut Velocity, &mut TextureAtlas),
-        (With<Player>, Without<Background>),
-    >,
+    enemy_query: Query<&Transform, (With<Enemy>, Without<Player>)>,
+    door_query: Query<&Transform, (With<Door>, Without<Player>)>,
+    mut player: Query<(&mut Transform, &mut Velocity, &mut TextureAtlas), (With<Player>, Without<Background>)>,
+    mut enemy_event_writer: EventWriter<EnemyCollisionEvent>,
+    mut end_event_writer: EventWriter<EndGameEvent>,
 ) {
     let (mut pt, mut pv, mut texture_atlas) = player.single_mut();
 
     let mut deltav = Vec2::splat(0.);
+
 
     if input.pressed(KeyCode::KeyA) {
         deltav.x -= 1.;
@@ -178,12 +240,13 @@ fn move_player(
     let change = pv.velocity * deltat;
 
     let new_pos = pt.translation + Vec3::new(change.x, 0., 0.);
-
+    
     if new_pos.x >= -(LEVEL_W / 2.) + (TILE_SIZE as f32) / 2.
         && new_pos.x <= LEVEL_W / 2. - (TILE_SIZE as f32) / 2.
     {
         //check collision
-        if !check_wall_collision(new_pos, &wall_query) {
+        if !check_wall_collision(new_pos, &wall_query) && !check_enemy_collision(new_pos, &enemy_query, &mut enemy_event_writer) &&
+        !check_door_collision(new_pos, &door_query, &mut end_event_writer){
             pt.translation = new_pos;
         }
     }
@@ -192,8 +255,9 @@ fn move_player(
     if new_pos.y >= -(LEVEL_H / 2.) + (TILE_SIZE as f32) / 2.
         && new_pos.y <= LEVEL_H / 2. - (TILE_SIZE as f32) / 2.
     {
-        //check collision
-        if !check_wall_collision(new_pos, &wall_query) {
+         //check collision
+         if !check_wall_collision(new_pos, &wall_query) && !check_enemy_collision(new_pos, &enemy_query, &mut enemy_event_writer) && 
+         !check_door_collision(new_pos, &door_query, &mut end_event_writer){
             pt.translation = new_pos;
         }
     }
@@ -207,6 +271,38 @@ fn check_wall_collision(
         let a: Sides = new_pos.into();
         let b: Sides = collider_transform.translation.into();
         if a.bottom <= b.top && a.top >= b.bottom && a.right >= b.left && a.left <= b.right {
+            return true
+        }
+    }
+    return false;
+}
+
+fn check_enemy_collision(
+    new_pos: Vec3,
+    collider_query: &Query<&Transform, (With<Enemy>, Without<Player>)>,
+    mut collision_events: &mut EventWriter<EnemyCollisionEvent>,
+) -> bool {
+    for collider_transform in collider_query.iter() {
+        let a: Sides = new_pos.into();
+        let b: Sides = collider_transform.translation.into();
+        if a.bottom <= b.top && a.top >= b.bottom && a.right >= b.left && a.left <= b.right {
+            collision_events.send(EnemyCollisionEvent);
+            return true;
+        }
+    }
+    return false;
+}
+
+fn check_door_collision(
+    new_pos: Vec3,
+    collider_query: &Query<&Transform, (With<Door>, Without<Player>)>,
+    mut collision_events: &mut EventWriter<EndGameEvent>,
+) -> bool {
+    for collider_transform in collider_query.iter() {
+        let a: Sides = new_pos.into();
+        let b: Sides = collider_transform.translation.into();
+        if a.bottom <= b.top && a.top >= b.bottom && a.right >= b.left && a.left <= b.right {
+            collision_events.send(EndGameEvent);
             return true;
         }
     }
@@ -224,4 +320,4 @@ fn move_camera(
     let y_bound = LEVEL_H / 2. - WIN_H / 2.;
     ct.translation.x = pt.translation.x.clamp(-x_bound, x_bound);
     ct.translation.y = pt.translation.y.clamp(-y_bound, y_bound);
-}
+}    
