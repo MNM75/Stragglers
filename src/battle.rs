@@ -11,33 +11,12 @@ use crate::player::Player;
 use crate::enemy::Enemy;
 use crate::enemy::despawn_closest_enemy;
 
-#[derive(Resource, Default)]
-pub struct PlayInput {
-    pub action: PlayerAction,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PlayerAction {
-    None,
-    InText,
-    Attack,
-    Magic,
-    Heal,
-    Run,
-}
-
-impl Default for PlayerAction {
-    fn default() -> Self {
-        PlayerAction::None
-    }
-}
 pub struct BattlePlugin;
 
 
 impl Plugin for BattlePlugin{
     fn build(&self, app: &mut App){
         app.add_systems(Update, battle_input.run_if(in_state(GameState::BattleMode)));
-        app.insert_resource(PlayInput::default());
     }
 }
 
@@ -55,7 +34,6 @@ fn battle_input(
     state: Res<State<GameState>>,
     mut next_state: ResMut<NextState<GameState>>,
     input: Res<ButtonInput<KeyCode>>,
-    play_input: Res<PlayInput>,
 
     mut player_stat_query: Query<&mut PlayerStats, With<Player>>,
     mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
@@ -195,9 +173,9 @@ fn enemy_heal(
 
 fn physical_attack(base_damage: u32,physical_attack: u32, physical_defense: u32) -> u32{
     let mut final_dmg: u32 = 0;
-    let num = rand::thread_rng().gen_range(90..110);
+    let num = rand::thread_rng().gen_range(75..125);
     //attack
-    final_dmg = base_damage*(((num as f64)/100.0)*(1.0+(physical_attack as f64)/10.0)) as u32;
+    final_dmg = ((base_damage as f64)*(((num as f64)/100.0)*(1.0+(physical_attack as f64)/10.0))) as u32;
     //defend
     final_dmg =((final_dmg as f64)*(1.0+0.5*((physical_defense as f64)/10.0))) as u32;
 
@@ -212,7 +190,7 @@ fn magic_attack(base_damage: u32,magic_attack: u32, magic_defense: u32) -> u32{
     let magic_contest =(((magic_attack-magic_defense+10) as f64)*5.0+25.0) as u32; 
 
     if(num<magic_contest){
-        final_dmg = base_damage*((1.0+(magic_attack as f64)/10.0)) as u32;
+        final_dmg = ((base_damage as f64)*(1.0+(magic_attack as f64)/10.0)) as u32;
     }
 
     return final_dmg;
