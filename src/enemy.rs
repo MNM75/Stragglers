@@ -16,8 +16,10 @@ pub struct Enemy{
 
 #[derive(Component)]
 pub struct EnemyStats {
-    pub attack: u32,
-    pub magic: u32,
+    pub physatk: u32,
+    pub physdef: u32,
+    pub mgkatk: u32,
+    pub mgkdef: u32,
     pub speed: u32,
     pub max_hp: u32,
     pub hp: u32,
@@ -26,8 +28,10 @@ pub struct EnemyStats {
 impl EnemyStats {
     pub fn new() -> Self {
         Self {
-            attack: 1,
-            magic: 1,
+            physatk: 1,
+            physdef: 1,
+            mgkatk: 1,
+            mgkdef: 1,
             speed: 1,
             max_hp: 10,
             hp: 10,

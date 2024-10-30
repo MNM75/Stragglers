@@ -1,5 +1,6 @@
 use bevy::{
     color::palettes::css::BLACK,
+    color::palettes::css::WHITE,
     prelude::*
 };
 
@@ -15,6 +16,13 @@ use crate::player::LEVEL_H;
 #[derive(Component)]
 struct SkillTreeUIBackground;
 #[derive(Component)]
+struct SkillTreeUISkeleton;
+#[derive(Component)]
+struct SkillTreeUINode {
+    unlocked: bool,
+    index: u32,
+}
+#[derive(Component)]
 struct SkillTreeUIComponent;
 
 #[derive(Component)]
@@ -24,17 +32,24 @@ struct StatText {
 
 enum StatType {
     Attack,
+    Defense,
     Magic,
+    MagicDefense,
     Speed,
     MaxHp,
     Hp,
+
     SkillPoints,
     AbilityPoints,
+
     Strength,
     Mgk,
     Agility,
     Health,
 }
+
+// #[derive(Event)]
+// struct UnlockNodeEvent(SkillTreeUINode);
 
 pub struct SkillTreePlugin;
 
@@ -44,6 +59,7 @@ impl Plugin for SkillTreePlugin{
         app.add_systems(PostStartup, hide_skill_tree_ui);
         app.add_systems(Update, toggle_skill_tree_ui);
         app.add_systems(Update, update_skill_tree_ui);
+        app.add_systems(Update, unlock_skill_tree_nodes.run_if(in_state(GameState::SkillTreeMenu)));
         app.add_systems(Update, spend_ability_point.run_if(in_state(GameState::SkillTreeMenu)));
         app.add_systems(Update, spend_skill_point.run_if(in_state(GameState::SkillTreeMenu)));
         app.add_systems(OnEnter(GameState::SkillTreeMenu), show_skill_tree_ui);
@@ -64,6 +80,254 @@ fn load_skill_tree_ui(
             SkillTreeUIComponent,
             SpriteBundle {
             texture: asset_server.load("skillTreeUI.png"),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        // skill tree skeleton
+        commands.spawn((
+            SkillTreeUISkeleton,
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: asset_server.load("skillTreeSkeleton.png"),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        // skill tree nodes, indexed 0 - 17
+        let skill_tree_node_handle = asset_server.load("skillTreeNodeLocked.png");
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 0,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 1,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 2,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 3,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 4,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 5,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 6,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 7,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 8,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 9,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 10,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 11,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 12,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 13,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 14,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 15,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 16,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        commands.spawn((
+            SkillTreeUINode {
+                unlocked: false,
+                index: 17,
+            },
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: skill_tree_node_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
             }
@@ -227,9 +491,10 @@ fn load_skill_tree_ui(
                 ..default()
             })
         ));
-        // def
+        // phys def
         commands.spawn((
             SkillTreeUIComponent,
+            StatText { stat_type: StatType::Defense },
             TextBundle::from_section(
                 "0",
                 TextStyle {
@@ -286,8 +551,9 @@ fn load_skill_tree_ui(
         // mdef
         commands.spawn((
             SkillTreeUIComponent,
+            StatText { stat_type: StatType::MagicDefense },
             TextBundle::from_section(
-                "0",
+                player_stats.mgkDefense.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -301,14 +567,36 @@ fn load_skill_tree_ui(
                 ..default()
             }),
         ));
+
+        // exit text  ------------------------------------------------------------
+        commands.spawn((
+            SkillTreeUIComponent,
+            TextBundle::from_section(
+                "Press 'Q' to exit",
+                TextStyle {
+                    font_size: 20.0,
+                    color: bevy::prelude::Color::Srgba(WHITE),
+                    ..default()
+                },
+            )
+            .with_style(Style {
+                position_type: PositionType::Absolute,
+                top: Val::Px(10.0),
+                right: Val::Px(10.0),
+                ..default()
+            })
+        ));
     }
 }
 
 fn show_skill_tree_ui(
     mut commands: Commands,
     query: Query<Entity, With<SkillTreeUIComponent>>,
-    mut background: Query<&mut Transform, With<SkillTreeUIBackground>>,
-    player: Query<&Transform, (With<Player>, Without<SkillTreeUIBackground>)>,) // an &Transform with <Player> would not have <SkillTreeUIBackground> applied by user logic, but the Without<T> is included to not cause a panic and crash the game
+    mut skeleton: Query<&mut Transform, (With<SkillTreeUISkeleton>, Without<SkillTreeUIBackground>)>,
+    mut background: Query<&mut Transform, (With<SkillTreeUIBackground>, Without<SkillTreeUISkeleton>)>,
+    mut nodes: Query<&mut Transform, (With<SkillTreeUINode>, Without<SkillTreeUIBackground>, Without<SkillTreeUISkeleton>)>,
+    player: Query<&Transform, (With<Player>, Without<SkillTreeUIBackground>, Without<SkillTreeUISkeleton>, Without<SkillTreeUINode>)>,)
+    // an &Transform with <...> would not have <SkillTreeUI...> applied by user logic, but the Without<T> is included to not cause a panic and crash the game
 {
     // makes the skill tree UI visible
     for entity in query.iter() {
@@ -317,13 +605,83 @@ fn show_skill_tree_ui(
 
     // centers the skill tree on the center of the screen (based on player location)
     let pt = player.single();
-    let mut bt = background.single_mut();
     let x_bound = LEVEL_W / 2. - WIN_W / 2.;
     let y_bound = LEVEL_H / 2. - WIN_H / 2.;
 
-    bt.translation.x = pt.translation.x.clamp(-x_bound, x_bound);   // same logic as camera/player movement
-    bt.translation.y = pt.translation.y.clamp(-y_bound, y_bound);   // same logic as camera/player movement
-    bt.translation.z = pt.translation.z + 1.;
+    let x_player = pt.translation.x.clamp(-x_bound, x_bound);   // same logic as camera/player movement
+    let y_player = pt.translation.y.clamp(-y_bound, y_bound);   // same logic as camera/player movement
+    let z_player = pt.translation.z;
+
+    let mut bt = background.single_mut();
+    let mut st = skeleton.single_mut();
+
+    bt.translation.x = x_player;
+    bt.translation.y = y_player;
+    bt.translation.z = z_player + 1.;
+
+    st.translation.x = x_player + 120.;
+    st.translation.y = y_player;
+    st.translation.z = bt.translation.z + 1.;
+
+    // loads the nodes...
+    let mut i = 0;
+    let mut tier1 = true;
+    let mut tier2 = false;
+    let mut tier3 = false;
+
+    for mut nt in nodes.iter_mut() {
+        if tier1 == true {
+            nt.translation.x = st.translation.x - 410. + (i as f32)%3. * 120.;
+            nt.translation.y = st.translation.y;
+            nt.translation.z = st.translation.z + 1.;
+            i += 1;
+            if i > 2 {
+                tier1 = false;
+                tier2 = true;
+            }
+        }
+        else if tier2 == true {
+            if 2 < i && i <= 5 {
+                nt.translation.x = st.translation.x - 112.5 + (i as f32)%3. * 120.;
+                nt.translation.y = st.translation.y + 86.;
+                nt.translation.z = st.translation.z + 1.;
+                i += 1;
+            }
+            else if i > 5 {
+                nt.translation.x = st.translation.x - 112.5 + (i as f32)%3. * 120.;
+                nt.translation.y = st.translation.y - 86.;
+                nt.translation.z = st.translation.z + 1.;
+                i += 1;
+                if i > 8 {
+                    tier2 = false;
+                    tier3 = true;
+                }
+            }
+        }
+        else if tier3 == true {
+            if 8 < i && i <= 11 {
+                nt.translation.x = st.translation.x + 185. + (i as f32)%3. * 120.;
+                nt.translation.y = st.translation.y + 172.;
+                nt.translation.z = st.translation.z + 1.;
+                i += 1;
+            }
+            else if 11 < i && i <= 14 {
+                nt.translation.x = st.translation.x + 185. + (i as f32)%3. * 120.;
+                nt.translation.y = st.translation.y;
+                nt.translation.z = st.translation.z + 1.;
+                i += 1;
+            }
+            else if i > 14 {
+                nt.translation.x = st.translation.x + 190. + (i as f32)%3. * 120.;
+                nt.translation.y = st.translation.y - 172.;
+                nt.translation.z = st.translation.z + 1.;
+                i += 1;
+                if i > 17 {
+                    tier3 = false;
+                }
+            }
+        }
+    }
 }
 
 fn hide_skill_tree_ui(
@@ -360,8 +718,14 @@ fn update_skill_tree_ui(
                 StatType::Attack => {
                     text.sections[0].value = player_stats.attack.to_string();
                 }
+                StatType::Defense => {
+                    text.sections[0].value = player_stats.physDefense.to_string();
+                }
                 StatType::Magic => {
-                    text.sections[0].value = player_stats.magic.to_string();
+                    text.sections[0].value = player_stats.mgk.to_string();
+                }
+                StatType::MagicDefense => {
+                    text.sections[0].value = player_stats.mgkDefense.to_string();
                 }
                 StatType::Speed => {
                     text.sections[0].value = player_stats.speed.to_string();
@@ -379,16 +743,16 @@ fn update_skill_tree_ui(
                     text.sections[0].value = player_stats.ability_points.to_string();
                 }
                 StatType::Strength => {
-                    text.sections[0].value = player_stats.attack.to_string();
+                    text.sections[0].value = player_stats.strength.to_string();
                 }
                 StatType::Mgk => {
-                    text.sections[0].value = player_stats.attack.to_string();
+                    text.sections[0].value = player_stats.magic.to_string();
                 }
                 StatType::Agility => {
-                    text.sections[0].value = player_stats.attack.to_string();
+                    text.sections[0].value = player_stats.agility.to_string();
                 }
                 StatType::Health => {
-                    text.sections[0].value = player_stats.attack.to_string();
+                    text.sections[0].value = player_stats.health.to_string();
                 }
             }
         }
@@ -404,12 +768,19 @@ fn spend_ability_point(
         if player_stats.ability_points > 0 {
             // Check for key presses and upgrade the appropriate stat
             if input.just_pressed(KeyCode::KeyF) { //press f to upgrade respect *attack
+                player_stats.strength += 1;
                 player_stats.attack += 1;
+                player_stats.physDefense += 1;
             } else if input.just_pressed(KeyCode::KeyG) { //g to upgrade magic
                 player_stats.magic += 1;
+                player_stats.mgk += 1;
+                player_stats.mgkDefense += 1;
             } else if input.just_pressed(KeyCode::KeyH) { //h to upgrade speed
+                player_stats.agility += 1;
                 player_stats.speed += 1;
             } else if input.just_pressed(KeyCode::KeyJ) { //j to upgrade max_hp all temporary for now
+                player_stats.health += 1;
+                player_stats.hp += 10;
                 player_stats.max_hp += 10;
             } else {
                 return; // No valid key pressed, exit early
@@ -444,3 +815,58 @@ fn spend_skill_point(
         }
     }
 }
+
+fn unlock_skill_tree_nodes(
+    buttons: Res<ButtonInput<MouseButton>>,
+    window: Query<&Window>,
+    mut sprites: Query<(&Transform, &Handle<Image>), (With<Sprite>, With<SkillTreeUINode>)>,
+    assets: Res<Assets<Image>>,
+    cameras: Query<(&Camera, &GlobalTransform)>,
+    // mut ev_unlock_node: EventWriter<UnlockNodeEvent>,
+    // nodes: Query<(Entity, &Sprite), With<SkillTreeUINode>>,
+) {
+    // get node bounds
+    // let mut arr: [(i32, i32, i32, i32); 18];
+    // arr[0] = ();
+
+    let (camera, position) = cameras.single();
+    let mut i = 0;
+
+    // for each sprite...
+    for (transform, image_handle) in &mut sprites {
+        // get the (rectangular) bounds of the sprite
+        let image_size = assets.get(image_handle).unwrap().size_f32();
+        let scaled = image_size * transform.scale.truncate();
+        let bounds = Rect::from_center_size(
+            transform.translation.truncate(),
+            scaled
+        );
+
+        // get the cursor location in world coordinates
+        if let Some(p) = window.single().cursor_position()
+            .and_then(|cursor| camera.viewport_to_world(position, cursor))
+            .map(|ray| ray.origin.truncate())
+        {
+            // if the cursor location is within the (rectangular) bounds of one of the nodes and the mouse is clicked...
+            if p.x > bounds.min.x 
+            && p.x < bounds.max.x 
+            && p.y > bounds.min.y 
+            && p.y < bounds.max.y 
+            && buttons.just_pressed(MouseButton::Left)
+            {
+                // unlock the node
+                info!("node unlocked");
+                //ev_unlock_node.send(UnlockNodeEvent());
+            }
+        }
+    }
+}
+
+// fn update_skill_tree_nodes(
+//     mut ev_unlock_node: EventReader<UnlockNodeEvent>,
+// ) {
+    
+//     for ev in ev_unlock_node.read() {
+//         let index = ev.;
+//     }
+// }
