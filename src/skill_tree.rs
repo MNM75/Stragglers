@@ -32,12 +32,16 @@ struct StatText {
 
 enum StatType {
     Attack,
+    Defense,
     Magic,
+    MagicDefense,
     Speed,
     MaxHp,
     Hp,
+
     SkillPoints,
     AbilityPoints,
+
     Strength,
     Mgk,
     Agility,
@@ -487,9 +491,10 @@ fn load_skill_tree_ui(
                 ..default()
             })
         ));
-        // def
+        // phys def
         commands.spawn((
             SkillTreeUIComponent,
+            StatText { stat_type: StatType::Defense },
             TextBundle::from_section(
                 "0",
                 TextStyle {
@@ -546,8 +551,9 @@ fn load_skill_tree_ui(
         // mdef
         commands.spawn((
             SkillTreeUIComponent,
+            StatText { stat_type: StatType::MagicDefense },
             TextBundle::from_section(
-                "0",
+                player_stats.mgkDefense.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -712,8 +718,14 @@ fn update_skill_tree_ui(
                 StatType::Attack => {
                     text.sections[0].value = player_stats.attack.to_string();
                 }
+                StatType::Defense => {
+                    text.sections[0].value = player_stats.physDefense.to_string();
+                }
                 StatType::Magic => {
-                    text.sections[0].value = player_stats.magic.to_string();
+                    text.sections[0].value = player_stats.mgk.to_string();
+                }
+                StatType::MagicDefense => {
+                    text.sections[0].value = player_stats.mgkDefense.to_string();
                 }
                 StatType::Speed => {
                     text.sections[0].value = player_stats.speed.to_string();
@@ -731,16 +743,16 @@ fn update_skill_tree_ui(
                     text.sections[0].value = player_stats.ability_points.to_string();
                 }
                 StatType::Strength => {
-                    text.sections[0].value = player_stats.attack.to_string();
+                    text.sections[0].value = player_stats.strength.to_string();
                 }
                 StatType::Mgk => {
-                    text.sections[0].value = player_stats.attack.to_string();
+                    text.sections[0].value = player_stats.magic.to_string();
                 }
                 StatType::Agility => {
-                    text.sections[0].value = player_stats.attack.to_string();
+                    text.sections[0].value = player_stats.agility.to_string();
                 }
                 StatType::Health => {
-                    text.sections[0].value = player_stats.attack.to_string();
+                    text.sections[0].value = player_stats.health.to_string();
                 }
             }
         }
@@ -756,12 +768,19 @@ fn spend_ability_point(
         if player_stats.ability_points > 0 {
             // Check for key presses and upgrade the appropriate stat
             if input.just_pressed(KeyCode::KeyF) { //press f to upgrade respect *attack
+                player_stats.strength += 1;
                 player_stats.attack += 1;
+                player_stats.physDefense += 1;
             } else if input.just_pressed(KeyCode::KeyG) { //g to upgrade magic
                 player_stats.magic += 1;
+                player_stats.mgk += 1;
+                player_stats.mgkDefense += 1;
             } else if input.just_pressed(KeyCode::KeyH) { //h to upgrade speed
+                player_stats.agility += 1;
                 player_stats.speed += 1;
             } else if input.just_pressed(KeyCode::KeyJ) { //j to upgrade max_hp all temporary for now
+                player_stats.health += 1;
+                player_stats.hp += 10;
                 player_stats.max_hp += 10;
             } else {
                 return; // No valid key pressed, exit early
@@ -851,3 +870,4 @@ fn unlock_skill_tree_nodes(
 //         let index = ev.;
 //     }
 // }
+
