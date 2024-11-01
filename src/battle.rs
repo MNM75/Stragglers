@@ -3,7 +3,6 @@ use rand::prelude::*;
 use crate::GameState;
 
 use crate::player::PlayerStats;
-
 use crate::enemy::EnemyStats;
 
 
@@ -44,6 +43,7 @@ fn battle_input(
     commands: Commands,
     enemy_query: Query<(Entity, &Transform), With<Enemy>>,
     player_query: Query<&Transform, With<Player>>,
+    
 ) {
     // later: check it's the player's turn
 
@@ -52,7 +52,7 @@ fn battle_input(
                 if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
    
                     // Simple attack that deals 10 damage to the enemy
-                    let attack_dmg = physical_attack(5, player_stats.attack, enemy_stats.mgkatk);
+                    let attack_dmg = physical_attack(5, player_stats.attack, enemy_stats.mgkatk);//why is attack using eenemy magic attack?
                     enemy_stats.hp = enemy_stats.hp.saturating_sub(attack_dmg);
                     
                     info!("Enemy was attacked with sword for {} damage! Enemy HP is now: {}", attack_dmg, enemy_stats.hp);
@@ -151,7 +151,7 @@ fn enemy_attack(
                 info!("Enemy hit you with a psychic force for {} damage! Player HP is now: {}",enemy_damage, player_stats.hp);
             } else if (attack == 2){
                 enemy_heal(enemy_stat_query);
-                //player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
+                player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
                 
             }
         }       
@@ -167,7 +167,9 @@ fn enemy_heal(
         let max_hp = enemy_stats.max_hp;
         let heal_amt = heal(4, enemy_stats.mgkatk); // get the heal amount (just a flat 5 hp for now)
         enemy_stats.hp = current_hp + heal_amt.clamp(0, max_hp - current_hp);
+        
         info!("Enemy healed! Enemy hp is now: {}", enemy_stats.hp);
+
     }
 }
 
