@@ -44,9 +44,6 @@ enum StatType {
     Health,
 }
 
-// #[derive(Event)]
-// struct UnlockNodeEvent(SkillTreeUINode);
-
 pub struct SkillTreePlugin;
 
 impl Plugin for SkillTreePlugin{
@@ -66,6 +63,7 @@ impl Plugin for SkillTreePlugin{
 fn load_skill_tree_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     player_query: Query<&PlayerStats, With<Player>>,
 ) {
     // Retrieve player stats
@@ -93,7 +91,9 @@ fn load_skill_tree_ui(
         ));
 
         // skill tree nodes, indexed 0 - 17
-        let skill_tree_node_handle = asset_server.load("skillTreeNodeLocked.png");
+        let node_sheet_handle = asset_server.load("skillTreeNodeSheet.png");
+        let node_layout = TextureAtlasLayout::from_grid(UVec2::new(64, 64), 2, 1, None, None);
+        let node_layout_handle = texture_atlases.add(node_layout);
 
         commands.spawn((
             SkillTreeUINode {
@@ -102,10 +102,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -115,10 +119,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -128,10 +136,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -141,10 +153,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -154,10 +170,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -167,10 +187,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -180,10 +204,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -193,10 +221,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -206,10 +238,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -219,10 +255,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -232,10 +272,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -245,10 +289,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -258,10 +306,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -271,10 +323,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -284,10 +340,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -297,10 +357,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -310,10 +374,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -323,10 +391,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         // Ability Points
@@ -800,21 +872,14 @@ fn spend_skill_point(
 fn unlock_skill_tree_nodes(
     buttons: Res<ButtonInput<MouseButton>>,
     window: Query<&Window>,
-    mut sprites: Query<(&Transform, &Handle<Image>), (With<Sprite>, With<SkillTreeUINode>)>,
+    mut sprites: Query<(&Transform, &Handle<Image>, &mut TextureAtlas, &mut SkillTreeUINode), (With<Sprite>, With<SkillTreeUINode>)>,
     assets: Res<Assets<Image>>,
     cameras: Query<(&Camera, &GlobalTransform)>,
-    // mut ev_unlock_node: EventWriter<UnlockNodeEvent>,
-    // nodes: Query<(Entity, &Sprite), With<SkillTreeUINode>>,
 ) {
-    // get node bounds
-    // let mut arr: [(i32, i32, i32, i32); 18];
-    // arr[0] = ();
-
     let (camera, position) = cameras.single();
-    let mut i = 0;
 
-    // for each sprite...
-    for (transform, image_handle) in &mut sprites {
+    // get all matching entities
+    for (transform, image_handle, mut texture_atlas, mut node) in &mut sprites {
         // get the (rectangular) bounds of the sprite
         let image_size = assets.get(image_handle).unwrap().size_f32();
         let scaled = image_size * transform.scale.truncate();
@@ -835,19 +900,11 @@ fn unlock_skill_tree_nodes(
             && p.y < bounds.max.y 
             && buttons.just_pressed(MouseButton::Left)
             {
-                // unlock the node
-                info!("node unlocked");
-                //ev_unlock_node.send(UnlockNodeEvent());
+                // unlock the node by changing its unlocked value and sprite using texture atlas index
+                texture_atlas.index = 1;
+                node.unlocked = true;
+                info!("node unlocked: {:?}", node.unlocked);
             }
         }
     }
 }
-
-// fn update_skill_tree_nodes(
-//     mut ev_unlock_node: EventReader<UnlockNodeEvent>,
-// ) {
-    
-//     for ev in ev_unlock_node.read() {
-//         let index = ev.;
-//     }
-// }
