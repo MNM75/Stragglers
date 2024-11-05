@@ -952,7 +952,7 @@ fn unlock_skill_tree_nodes(
                         }
                         else if i == 5 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
                             unlock_node(texture_atlas, node, node_array);
-                            player_stats.atk += 1;
+                            player_stats.def += 1;
                             spend_skill_points(player_stats, 2);
                         }
                         // bottom
@@ -968,7 +968,7 @@ fn unlock_skill_tree_nodes(
                         }
                         else if i == 8 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
                             unlock_node(texture_atlas, node, node_array);
-                            player_stats.matk += 1;
+                            player_stats.mdef += 1;
                             spend_skill_points(player_stats, 2);
                         }
 
@@ -976,7 +976,8 @@ fn unlock_skill_tree_nodes(
                         // top
                         else if i == 9 && node_array[5] == true && curr_sp >= 3 {
                             unlock_node(texture_atlas, node, node_array);
-                            player_stats.atk += 2;
+                            player_stats.atk += 1;
+                            player_stats.def += 1;
                             spend_skill_points(player_stats, 3);
                         }
                         else if i == 10 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
@@ -1016,6 +1017,7 @@ fn unlock_skill_tree_nodes(
                         else if i == 16 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
                             unlock_node(texture_atlas, node, node_array);
                             player_stats.matk += 1;
+                            player_stats.mdef += 1;
                             spend_skill_points(player_stats, 3);
                         }
                         else if i == 17 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
