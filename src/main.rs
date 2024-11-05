@@ -9,6 +9,7 @@ mod enemy;
 mod events;
 mod battle;
 mod end_credits;
+mod attack;
 
 use map::MapPlugin;
 use player::PlayerPlugin;

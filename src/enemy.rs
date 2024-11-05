@@ -23,10 +23,11 @@ pub struct EnemyStats {
     pub speed: u32,
     pub max_hp: u32,
     pub hp: u32,
+    pub etype: u32,
 }
 
 impl EnemyStats {
-    pub fn new() -> Self {
+    pub fn new(etype: u32) -> Self {
         Self {
             physatk: 1,
             physdef: 1,
@@ -35,6 +36,14 @@ impl EnemyStats {
             speed: 1,
             max_hp: 10,
             hp: 10,
+            etype,
+        }
+    }
+    pub fn sprite_path(&self) -> &'static str {
+        match self.etype {
+            1 => "enemyPlaceHolder.png",
+            2 => "characterProto.png",
+            _ => "tileProto.png",
         }
     }
 }
@@ -43,7 +52,7 @@ pub struct EnemyPlugin;
     
 impl Plugin for EnemyPlugin{
     fn build(&self, app: &mut App){
-         app.add_systems(Update, enemy_pace.run_if(in_state(GameState::InGame)));
+        app.add_systems(Update, enemy_pace.run_if(in_state(GameState::InGame)));
     }
 
 }
@@ -53,9 +62,11 @@ pub fn spawn_enemy(
     asset_server: &Res<AssetServer>,
     texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
     position: Vec3,
+    etype: u32,
 ) {
+    let enemy_stats = EnemyStats::new(etype);
     // load textures and create texture atlases
-    let enemy_texture_handle = asset_server.load("enemyPlaceHolder.png");
+    let enemy_texture_handle = asset_server.load(enemy_stats.sprite_path());
     let enemy_layout = TextureAtlasLayout::from_grid(UVec2::splat(ENEMY_SIZE), 1, 1, None, None);
     let enemy_layout_handle = texture_atlases.add(enemy_layout);
 
@@ -80,7 +91,7 @@ pub fn spawn_enemy(
             left_boundary,
             right_boundary,
         },
-        EnemyStats::new(),
+        EnemyStats::new(etype),
     ));
 }
 
