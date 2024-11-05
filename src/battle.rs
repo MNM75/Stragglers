@@ -10,6 +10,8 @@ use crate::player::Player;
 use crate::enemy::Enemy;
 use crate::enemy::despawn_closest_enemy;
 
+use crate::attack::choose_attack;
+
 pub struct BattlePlugin;
 
 
@@ -135,8 +137,9 @@ fn enemy_attack(
     mut player_stat_query: Query<&mut PlayerStats, With<Player>>,
     mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
 ) {
-    let rand: usize = random();
-    let attack = rand %3; 
+    // let rand: usize = random();
+    // let attack = rand %3; 
+    let attack = choose_attack(&mut player_stat_query, &mut enemy_stat_query);
     //info!("attack value: {}", attack);
     let mut enemy_damage = 0;
     if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
@@ -144,7 +147,7 @@ fn enemy_attack(
             if (attack == 0){
                 enemy_damage = physical_attack(5, enemy_stats.physatk, player_stats.def);
                 player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
-                info!("Enemy bit you for {} damage! Player HP is now: {}",enemy_damage, player_stats.hp);
+                info!("Enemy hit you for {} damage! Player HP is now: {}",enemy_damage, player_stats.hp);
             } else if (attack == 1){
                 enemy_damage = magic_attack(5, enemy_stats.mgkatk, player_stats.mdef);
                 player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
