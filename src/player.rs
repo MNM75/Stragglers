@@ -83,15 +83,18 @@ impl Plugin for PlayerPlugin{
     
     #[derive(Component)]
     pub struct PlayerStats {
-        pub attack: u32,
-        pub magic: u32,
-        pub speed: u32,
+        pub atk: u32,
+        pub def: u32,
+        pub matk: u32,
+        pub mdef: u32,
+        pub spd: u32,
         pub max_hp: u32,
         pub hp: u32,
         pub skill_points: u32,
         pub ability_points: u32,
+
         pub strength: u32,
-        pub mgk: u32,
+        pub magic: u32,
         pub agility: u32,
         pub health: u32,
     }
@@ -99,17 +102,19 @@ impl Plugin for PlayerPlugin{
     impl PlayerStats {
         pub fn new() -> Self {
             Self {
-                attack: 1,
-                magic: 1,
-                speed: 1,
+                atk: 1,
+                def: 1,
+                matk: 1,
+                mdef: 1,
+                spd: 1,
                 max_hp: 10,
                 hp: 10,
                 skill_points: 4,
                 ability_points: 8,
-                strength: 0,
-                mgk: 0,
-                agility: 0,
-                health: 0,
+                strength: 1,
+                magic: 1,
+                agility: 1,
+                health: 1,
             }
         }
 

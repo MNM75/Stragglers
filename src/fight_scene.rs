@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use crate::GameState;
 use crate::events::EnemyCollisionEvent;
+use crate::enemy::EnemyStats;
+use crate::enemy::Enemy;
 
 use crate::player::Player;
 use crate::WIN_W;
@@ -40,6 +42,11 @@ struct EnemyHealthBarBackground;
 
 pub struct FightScenePlugin;
 
+
+static mut player_health: f32 =  1.0; 
+static mut enemy_health: f32 =  1.0; 
+
+
 impl Plugin for FightScenePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_battle_ui);
@@ -47,6 +54,7 @@ impl Plugin for FightScenePlugin {
         app.add_systems(OnEnter(GameState::BattleMode), show_battle_ui);
         app.add_systems(OnExit(GameState::BattleMode), hide_battle_ui);        
         app.add_systems(Update, init_upon_collision);
+        app.add_systems(Update, update_enemy_health_bar);
     }
 }
 
@@ -66,13 +74,13 @@ fn init_upon_collision(
     }
 }
 
+
 // Set up battle scene UI
 fn setup_battle_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
-    let player_health = 0.75; 
-    let enemy_health = 0.5;    
+        
 
     let bg_texture_handle = asset_server.load("fightBackground.png");
     let player_texture_handle = asset_server.load("L_static.png");
@@ -172,8 +180,8 @@ fn setup_battle_ui(
         SpriteBundle {
             texture: healthbar_handle.clone(),
             transform: Transform {
-                translation: Vec3::new(-400.0-(240.0*(1.0-player_health)), 200., 2.), // position health bar above the background
-                scale: Vec3::new(1.0 * player_health, 0.1, 1.0), // scale based on player's health
+                translation: Vec3::new(-400.0-(240.0*(1.0-unsafe { player_health })), 200., 2.), // position health bar above the background
+                scale: Vec3::new(1.0 * unsafe { player_health }, 0.1, 1.0), // scale based on player's health
                 ..default()
             },
             ..default()
@@ -204,8 +212,8 @@ fn setup_battle_ui(
         SpriteBundle {
             texture: healthbar_handle.clone(),
             transform: Transform {
-                translation: Vec3::new(400.0-(240.0*(1.0-enemy_health)), 200., 2.), // position health bar above the background
-                scale: Vec3::new(1.0 * enemy_health, 0.1, 1.0), // scale based on enemy's health
+                translation: Vec3::new(400.0-(240.0*(1.0-unsafe { enemy_health })), 200., 2.), // position health bar above the background
+                scale: Vec3::new(1.0 * unsafe { enemy_health }, 0.1, 1.0), // scale based on enemy's health
                 ..default()
             },
             ..default()
@@ -215,6 +223,32 @@ fn setup_battle_ui(
         FightScene
     ));
 }
+
+//NOT completely working, feel free to remove if needed
+//  - green health bar only moves to the left of the screen after taking damage, going out of bounds instead of completely disappearing
+fn update_enemy_health_bar(
+    mut commands: Commands,
+    mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
+    mut enemy_hb: Query<&mut Transform, (With<EnemyHealthBar>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBarBackground>)>,
+    player: Query<&Transform, (With<Player>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
+
+){
+    if let Ok(enemy_stats) = enemy_stat_query.get_single(){
+        unsafe { enemy_health = (&enemy_stats.hp/&enemy_stats.max_hp) as f32 };
+    }
+
+    
+    let pt = player.single();
+    let x_bound = LEVEL_W / 2. - WIN_W / 2.;
+    let y_bound = LEVEL_H / 2. - WIN_H / 2.;
+    let mut ehb = enemy_hb.single_mut();    //enemy health bar 
+
+    ehb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)+400.0+(240.0*(1.0 - unsafe { enemy_health }));
+    ehb.translation.y = pt.translation.y.clamp(-y_bound, y_bound)+200.0;   // same logic as camera/player movement
+    ehb.translation.z = pt.translation.z + 1.2;
+
+}
+
 
 // Hide
 fn show_battle_ui(
@@ -228,9 +262,7 @@ fn show_battle_ui(
     mut enemy_hb: Query<&mut Transform, (With<EnemyHealthBar>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBarBackground>)>,
     mut enemy_hbb: Query<&mut Transform, (With<EnemyHealthBarBackground>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>)>,
     player: Query<&Transform, (With<Player>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
-) {
-    let player_health = 0.75;  
-    let enemy_health = 0.5;   
+) { 
 
     for entity in query.iter() {
         commands.entity(entity).insert(Visibility::Visible);
@@ -250,37 +282,37 @@ fn show_battle_ui(
 
     ps.translation.x = pt.translation.x.clamp(-x_bound, x_bound)-400.0;   // same logic as camera/player movement
     ps.translation.y = pt.translation.y.clamp(-y_bound, y_bound)-100.0;   // same logic as camera/player movement
-    ps.translation.z = pt.translation.z + 1.;
+    ps.translation.z = pt.translation.z + 1.1;
 
     let mut es = enemy_sp.single_mut();
 
     es.translation.x = pt.translation.x.clamp(-x_bound, x_bound)+400.0;   // same logic as camera/player movement
     es.translation.y = pt.translation.y.clamp(-y_bound, y_bound)-100.0;   // same logic as camera/player movement
-    es.translation.z = pt.translation.z + 1.;
+    es.translation.z = pt.translation.z + 1.1;
 
     let mut phb = player_hb.single_mut();
 
-    phb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)-400.0-(240.0*(1.0-player_health));   // same logic as camera/player movement
+    phb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)-400.0-(240.0*(1.0-unsafe { player_health }));   // same logic as camera/player movement
     phb.translation.y = pt.translation.y.clamp(-y_bound, y_bound)+200.0;   // same logic as camera/player movement
-    phb.translation.z = pt.translation.z + 1.;
+    phb.translation.z = pt.translation.z + 1.2;
 
     let mut phbb = player_hbb.single_mut();
 
     phbb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)-400.0;   // same logic as camera/player movement
     phbb.translation.y = pt.translation.y.clamp(-y_bound, y_bound)+200.0;   // same logic as camera/player movement
-    phbb.translation.z = pt.translation.z + 1.;
+    phbb.translation.z = pt.translation.z + 1.1;
+ 
+    let mut ehb = enemy_hb.single_mut();    //enemy health bar 
 
-    let mut ehb = enemy_hb.single_mut();
-
-    ehb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)+400.0-(240.0*(1.0-enemy_health));   // same logic as camera/player movement
+    ehb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)+400.0-(240.0*(1.0-unsafe { enemy_health }));   // same logic as camera/player movement
     ehb.translation.y = pt.translation.y.clamp(-y_bound, y_bound)+200.0;   // same logic as camera/player movement
-    ehb.translation.z = pt.translation.z + 1.;
+    ehb.translation.z = pt.translation.z + 1.2;
 
-    let mut ehbb = enemy_hbb.single_mut();
+    let mut ehbb = enemy_hbb.single_mut();  //enemy health bar background
 
     ehbb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)+400.0;   // same logic as camera/player movement
     ehbb.translation.y = pt.translation.y.clamp(-y_bound, y_bound)+200.0;   // same logic as camera/player movement
-    ehbb.translation.z = pt.translation.z + 1.;
+    ehbb.translation.z = pt.translation.z + 1.1;
     //}/**/
 }
 

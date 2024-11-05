@@ -31,15 +31,19 @@ struct StatText {
 }
 
 enum StatType {
-    Attack,
-    Magic,
-    Speed,
+    Atk,
+    Def,
+    Matk,
+    Mdef,
+    Spd,
     MaxHp,
     Hp,
+
     SkillPoints,
     AbilityPoints,
+
     Strength,
-    Mgk,
+    Magic,
     Agility,
     Health,
 }
@@ -464,9 +468,9 @@ fn load_skill_tree_ui(
         // Magic
         commands.spawn((
             SkillTreeUIComponent,
-            StatText { stat_type: StatType::Mgk },
+            StatText { stat_type: StatType::Magic },
             TextBundle::from_section(
-                player_stats.mgk.to_string(),
+                player_stats.magic.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -542,9 +546,9 @@ fn load_skill_tree_ui(
         // atk
         commands.spawn((
             SkillTreeUIComponent,
-            StatText { stat_type: StatType::Attack },
+            StatText { stat_type: StatType::Atk },
             TextBundle::from_section(
-                player_stats.attack.to_string(),
+                player_stats.atk.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -558,11 +562,12 @@ fn load_skill_tree_ui(
                 ..default()
             })
         ));
-        // def
+        // phys def
         commands.spawn((
             SkillTreeUIComponent,
+            StatText { stat_type: StatType::Def },
             TextBundle::from_section(
-                "0",
+                player_stats.def.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -579,9 +584,9 @@ fn load_skill_tree_ui(
         // spd
         commands.spawn((
             SkillTreeUIComponent,
-            StatText { stat_type: StatType::Speed },
+            StatText { stat_type: StatType::Spd },
             TextBundle::from_section(
-                player_stats.speed.to_string(),
+                player_stats.spd.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -598,9 +603,9 @@ fn load_skill_tree_ui(
         // matk
         commands.spawn((
             SkillTreeUIComponent,
-            StatText { stat_type: StatType::Magic },
+            StatText { stat_type: StatType::Matk },
             TextBundle::from_section(
-                player_stats.magic.to_string(),
+                player_stats.matk.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -617,8 +622,9 @@ fn load_skill_tree_ui(
         // mdef
         commands.spawn((
             SkillTreeUIComponent,
+            StatText { stat_type: StatType::Mdef },
             TextBundle::from_section(
-                "0",
+                player_stats.mdef.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -780,14 +786,20 @@ fn update_skill_tree_ui(
     if let Some(player_stats) = player_query.iter().next() {
         for (stat_text, mut text) in stat_query.iter_mut() {
             match stat_text.stat_type {
-                StatType::Attack => {
-                    text.sections[0].value = player_stats.attack.to_string();
+                StatType::Atk => {
+                    text.sections[0].value = player_stats.atk.to_string();
                 }
-                StatType::Magic => {
-                    text.sections[0].value = player_stats.magic.to_string();
+                StatType::Def => {
+                    text.sections[0].value = player_stats.def.to_string();
                 }
-                StatType::Speed => {
-                    text.sections[0].value = player_stats.speed.to_string();
+                StatType::Matk => {
+                    text.sections[0].value = player_stats.matk.to_string();
+                }
+                StatType::Mdef => {
+                    text.sections[0].value = player_stats.mdef.to_string();
+                }
+                StatType::Spd => {
+                    text.sections[0].value = player_stats.spd.to_string();
                 }
                 StatType::MaxHp => {
                     text.sections[0].value = player_stats.max_hp.to_string();
@@ -802,16 +814,16 @@ fn update_skill_tree_ui(
                     text.sections[0].value = player_stats.ability_points.to_string();
                 }
                 StatType::Strength => {
-                    text.sections[0].value = player_stats.attack.to_string();
+                    text.sections[0].value = player_stats.strength.to_string();
                 }
-                StatType::Mgk => {
-                    text.sections[0].value = player_stats.attack.to_string();
+                StatType::Magic => {
+                    text.sections[0].value = player_stats.magic.to_string();
                 }
                 StatType::Agility => {
-                    text.sections[0].value = player_stats.attack.to_string();
+                    text.sections[0].value = player_stats.agility.to_string();
                 }
                 StatType::Health => {
-                    text.sections[0].value = player_stats.attack.to_string();
+                    text.sections[0].value = player_stats.health.to_string();
                 }
             }
         }
@@ -827,12 +839,19 @@ fn spend_ability_point(
         if player_stats.ability_points > 0 {
             // Check for key presses and upgrade the appropriate stat
             if input.just_pressed(KeyCode::KeyF) { //press f to upgrade respect *attack
-                player_stats.attack += 1;
+                player_stats.strength += 1;
+                player_stats.atk += 1;
+                player_stats.def += 1;
             } else if input.just_pressed(KeyCode::KeyG) { //g to upgrade magic
                 player_stats.magic += 1;
+                player_stats.matk += 1;
+                player_stats.mdef += 1;
             } else if input.just_pressed(KeyCode::KeyH) { //h to upgrade speed
-                player_stats.speed += 1;
+                player_stats.agility += 1;
+                player_stats.spd += 1;
             } else if input.just_pressed(KeyCode::KeyJ) { //j to upgrade max_hp all temporary for now
+                player_stats.health += 1;
+                player_stats.hp += 10;
                 player_stats.max_hp += 10;
             } else {
                 return; // No valid key pressed, exit early
@@ -903,12 +922,12 @@ fn unlock_skill_tree_nodes(
                             // unlock the node by changing its unlocked value and sprite using texture atlas index
                             unlock_node(texture_atlas, node, node_array);
                             // edit relevant values
-                            player_stats.attack += 1;
+                            player_stats.atk += 1;
                             spend_skill_points(player_stats, 1);
                         }
                         else if i == 1 && node_array[(i-1) as usize] == true && curr_sp >= 1 {
                             unlock_node(texture_atlas, node, node_array);
-                            player_stats.magic += 1;
+                            player_stats.matk += 1;
                             spend_skill_points(player_stats, 1);
                         }
                         else if i == 2 && node_array[(i-1) as usize] == true && curr_sp >= 1{
@@ -921,7 +940,7 @@ fn unlock_skill_tree_nodes(
                         // top
                         else if i == 3 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
                             unlock_node(texture_atlas, node, node_array);
-                            player_stats.attack += 2;
+                            player_stats.atk += 2;
                             spend_skill_points(player_stats, 2);
                         }
                         else if i == 4 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
@@ -931,23 +950,23 @@ fn unlock_skill_tree_nodes(
                         }
                         else if i == 5 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
                             unlock_node(texture_atlas, node, node_array);
-                            player_stats.attack += 1;
+                            player_stats.atk += 1;
                             spend_skill_points(player_stats, 2);
                         }
                         // bottom
                         else if i == 6 && node_array[2] == true && curr_sp >= 2 {
                             unlock_node(texture_atlas, node, node_array);
-                            player_stats.magic += 2;
+                            player_stats.matk += 2;
                             spend_skill_points(player_stats, 2);
                         }
                         else if i == 7 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
                             unlock_node(texture_atlas, node, node_array);
-                            player_stats.speed += 1;
+                            player_stats.spd += 1;
                             spend_skill_points(player_stats, 2);
                         }
                         else if i == 8 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
                             unlock_node(texture_atlas, node, node_array);
-                            player_stats.magic += 1;
+                            player_stats.matk += 1;
                             spend_skill_points(player_stats, 2);
                         }
 
@@ -955,7 +974,7 @@ fn unlock_skill_tree_nodes(
                         // top
                         else if i == 9 && node_array[5] == true && curr_sp >= 3 {
                             unlock_node(texture_atlas, node, node_array);
-                            player_stats.attack += 2;
+                            player_stats.atk += 2;
                             spend_skill_points(player_stats, 3);
                         }
                         else if i == 10 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
@@ -971,7 +990,7 @@ fn unlock_skill_tree_nodes(
                         // middle
                         else if i == 12 && (node_array[5] == true || node_array[8] == true) && curr_sp >= 3 {
                             unlock_node(texture_atlas, node, node_array);
-                            player_stats.speed += 1;
+                            player_stats.spd += 1;
                             spend_skill_points(player_stats, 3);
                         }
                         else if i == 13 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
@@ -981,18 +1000,18 @@ fn unlock_skill_tree_nodes(
                         }
                         else if i == 14 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
                             unlock_node(texture_atlas, node, node_array);
-                            player_stats.speed += 1;
+                            player_stats.spd += 1;
                             spend_skill_points(player_stats, 3);
                         }
                         // bottom
                         else if i == 15 && node_array[8] == true && curr_sp >= 3 {
                             unlock_node(texture_atlas, node, node_array);
-                            player_stats.mgk += 1;
+                            player_stats.magic += 1;
                             spend_skill_points(player_stats, 3);
                         }
                         else if i == 16 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
                             unlock_node(texture_atlas, node, node_array);
-                            player_stats.magic += 1;
+                            player_stats.matk += 1;
                             spend_skill_points(player_stats, 3);
                         }
                         else if i == 17 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
