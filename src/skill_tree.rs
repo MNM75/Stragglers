@@ -54,7 +54,6 @@ impl Plugin for SkillTreePlugin{
         app.add_systems(Update, update_skill_tree_ui);
         app.add_systems(Update, unlock_skill_tree_nodes.run_if(in_state(GameState::SkillTreeMenu)));
         app.add_systems(Update, spend_ability_point.run_if(in_state(GameState::SkillTreeMenu)));
-        app.add_systems(Update, spend_skill_point.run_if(in_state(GameState::SkillTreeMenu)));
         app.add_systems(OnEnter(GameState::SkillTreeMenu), show_skill_tree_ui);
         app.add_systems(OnExit(GameState::SkillTreeMenu), hide_skill_tree_ui);
     }
@@ -844,29 +843,15 @@ fn spend_ability_point(
     }
 }
 
-fn spend_skill_point(
-    input: Res<ButtonInput<KeyCode>>, // Directly read input for key presses
-    mut player_query: Query<&mut PlayerStats, With<Player>>,
+fn spend_skill_points(
+    mut player_stats: Mut<'_, PlayerStats>,
+    points: u32,
 ) {
-    if let Ok(mut player_stats) = player_query.get_single_mut() {
         // Check if there are skill points available to spend
         if player_stats.skill_points > 0 {
-            // Check for key presses and upgrade the appropriate stat
-            if input.just_pressed(KeyCode::KeyR) {
-                player_stats.strength += 1;
-            } else if input.just_pressed(KeyCode::KeyT) {
-                player_stats.mgk += 1;
-            } else if input.just_pressed(KeyCode::KeyY) {
-                player_stats.agility += 1;
-            } else if input.just_pressed(KeyCode::KeyU) {
-                player_stats.health += 10;
-            } else {
-                return; // No valid key pressed, exit early
-            }
-            // Deduct an ability point for every successful upgrade
-            player_stats.skill_points -= 1;
+            // Deduct points for every successful upgrade
+            player_stats.skill_points -= points;
         }
-    }
 }
 
 fn unlock_skill_tree_nodes(
@@ -875,7 +860,16 @@ fn unlock_skill_tree_nodes(
     mut sprites: Query<(&Transform, &Handle<Image>, &mut TextureAtlas, &mut SkillTreeUINode), (With<Sprite>, With<SkillTreeUINode>)>,
     assets: Res<Assets<Image>>,
     cameras: Query<(&Camera, &GlobalTransform)>,
+    mut player_query: Query<&mut PlayerStats, With<Player>>,
 ) {
+    // array that tracks node unlock values
+    let mut node_array: [bool; 18] = [false; 18];
+    let mut n = 0;
+    for (_transform, _image_handle, _texture_atlas, node) in &mut sprites {
+        node_array[n] = node.unlocked;
+        n += 1;
+    }
+
     let (camera, position) = cameras.single();
 
     // get all matching entities
@@ -900,11 +894,125 @@ fn unlock_skill_tree_nodes(
             && p.y < bounds.max.y 
             && buttons.just_pressed(MouseButton::Left)
             {
-                // unlock the node by changing its unlocked value and sprite using texture atlas index
-                texture_atlas.index = 1;
-                node.unlocked = true;
-                info!("node unlocked: {:?}", node.unlocked);
+                if let Ok(mut player_stats) = player_query.get_single_mut() {
+                    if node.unlocked != true {
+                        let curr_sp = player_stats.skill_points;
+                        let i = node.index;
+                        // left
+                        if i == 0 && curr_sp >= 1 {
+                            // unlock the node by changing its unlocked value and sprite using texture atlas index
+                            unlock_node(texture_atlas, node, node_array);
+                            // edit relevant values
+                            player_stats.attack += 1;
+                            spend_skill_points(player_stats, 1);
+                        }
+                        else if i == 1 && node_array[(i-1) as usize] == true && curr_sp >= 1 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.magic += 1;
+                            spend_skill_points(player_stats, 1);
+                        }
+                        else if i == 2 && node_array[(i-1) as usize] == true && curr_sp >= 1{
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.max_hp += 10;
+                            spend_skill_points(player_stats, 1);
+                        }
+
+                        // middle
+                        // top
+                        else if i == 3 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.attack += 2;
+                            spend_skill_points(player_stats, 2);
+                        }
+                        else if i == 4 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.max_hp += 10;
+                            spend_skill_points(player_stats, 2);
+                        }
+                        else if i == 5 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.attack += 1;
+                            spend_skill_points(player_stats, 2);
+                        }
+                        // bottom
+                        else if i == 6 && node_array[2] == true && curr_sp >= 2 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.magic += 2;
+                            spend_skill_points(player_stats, 2);
+                        }
+                        else if i == 7 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.speed += 1;
+                            spend_skill_points(player_stats, 2);
+                        }
+                        else if i == 8 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.magic += 1;
+                            spend_skill_points(player_stats, 2);
+                        }
+
+                        // right
+                        // top
+                        else if i == 9 && node_array[5] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.attack += 2;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        else if i == 10 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.max_hp += 15;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        else if i == 11 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.strength += 1;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        // middle
+                        else if i == 12 && (node_array[5] == true || node_array[8] == true) && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.speed += 1;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        else if i == 13 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.max_hp += 20;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        else if i == 14 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.speed += 1;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        // bottom
+                        else if i == 15 && node_array[8] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.mgk += 1;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        else if i == 16 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.magic += 1;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        else if i == 17 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.max_hp += 20;
+                            spend_skill_points(player_stats, 3);
+                        }
+                    }
+                }
             }
         }
     }
+}
+
+fn unlock_node(
+    mut texture_atlas: Mut<TextureAtlas>,
+    mut node: Mut<'_, SkillTreeUINode>,
+    mut node_array: [bool; 18]
+) {
+    texture_atlas.index = 1;
+    node.unlocked = true;
+    node_array[node.index as usize] = true;
 }
