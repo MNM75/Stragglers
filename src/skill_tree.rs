@@ -31,11 +31,11 @@ struct StatText {
 }
 
 enum StatType {
-    Attack,
-    Defense,
-    Magic,
-    MagicDefense,
-    Speed,
+    Atk,
+    Def,
+    Matk,
+    Mdef,
+    Spd,
     MaxHp,
     Hp,
 
@@ -43,13 +43,10 @@ enum StatType {
     AbilityPoints,
 
     Strength,
-    Mgk,
+    Magic,
     Agility,
     Health,
 }
-
-// #[derive(Event)]
-// struct UnlockNodeEvent(SkillTreeUINode);
 
 pub struct SkillTreePlugin;
 
@@ -61,7 +58,6 @@ impl Plugin for SkillTreePlugin{
         app.add_systems(Update, update_skill_tree_ui);
         app.add_systems(Update, unlock_skill_tree_nodes.run_if(in_state(GameState::SkillTreeMenu)));
         app.add_systems(Update, spend_ability_point.run_if(in_state(GameState::SkillTreeMenu)));
-        app.add_systems(Update, spend_skill_point.run_if(in_state(GameState::SkillTreeMenu)));
         app.add_systems(OnEnter(GameState::SkillTreeMenu), show_skill_tree_ui);
         app.add_systems(OnExit(GameState::SkillTreeMenu), hide_skill_tree_ui);
     }
@@ -70,6 +66,7 @@ impl Plugin for SkillTreePlugin{
 fn load_skill_tree_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     player_query: Query<&PlayerStats, With<Player>>,
 ) {
     // Retrieve player stats
@@ -97,7 +94,9 @@ fn load_skill_tree_ui(
         ));
 
         // skill tree nodes, indexed 0 - 17
-        let skill_tree_node_handle = asset_server.load("skillTreeNodeLocked.png");
+        let node_sheet_handle = asset_server.load("skillTreeNodeSheet.png");
+        let node_layout = TextureAtlasLayout::from_grid(UVec2::new(64, 64), 2, 1, None, None);
+        let node_layout_handle = texture_atlases.add(node_layout);
 
         commands.spawn((
             SkillTreeUINode {
@@ -106,10 +105,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -119,10 +122,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -132,10 +139,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -145,10 +156,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -158,10 +173,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -171,10 +190,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -184,10 +207,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -197,10 +224,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -210,10 +241,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -223,10 +258,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -236,10 +275,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -249,10 +292,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -262,10 +309,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -275,10 +326,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -288,10 +343,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -301,10 +360,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -314,10 +377,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         commands.spawn((
@@ -327,10 +394,14 @@ fn load_skill_tree_ui(
             },
             SkillTreeUIComponent,
             SpriteBundle {
-            texture: skill_tree_node_handle.clone(),
+            texture: node_sheet_handle.clone(),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
-            }
+            },
+            TextureAtlas {
+                layout: node_layout_handle.clone(),
+                index: 0,
+            },
         ));
 
         // Ability Points
@@ -397,9 +468,9 @@ fn load_skill_tree_ui(
         // Magic
         commands.spawn((
             SkillTreeUIComponent,
-            StatText { stat_type: StatType::Mgk },
+            StatText { stat_type: StatType::Magic },
             TextBundle::from_section(
-                player_stats.mgk.to_string(),
+                player_stats.magic.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -475,9 +546,9 @@ fn load_skill_tree_ui(
         // atk
         commands.spawn((
             SkillTreeUIComponent,
-            StatText { stat_type: StatType::Attack },
+            StatText { stat_type: StatType::Atk },
             TextBundle::from_section(
-                player_stats.attack.to_string(),
+                player_stats.atk.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -494,9 +565,9 @@ fn load_skill_tree_ui(
         // phys def
         commands.spawn((
             SkillTreeUIComponent,
-            StatText { stat_type: StatType::Defense },
+            StatText { stat_type: StatType::Def },
             TextBundle::from_section(
-                "0",
+                player_stats.def.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -513,9 +584,9 @@ fn load_skill_tree_ui(
         // spd
         commands.spawn((
             SkillTreeUIComponent,
-            StatText { stat_type: StatType::Speed },
+            StatText { stat_type: StatType::Spd },
             TextBundle::from_section(
-                player_stats.speed.to_string(),
+                player_stats.spd.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -532,9 +603,9 @@ fn load_skill_tree_ui(
         // matk
         commands.spawn((
             SkillTreeUIComponent,
-            StatText { stat_type: StatType::Magic },
+            StatText { stat_type: StatType::Matk },
             TextBundle::from_section(
-                player_stats.magic.to_string(),
+                player_stats.matk.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -551,9 +622,9 @@ fn load_skill_tree_ui(
         // mdef
         commands.spawn((
             SkillTreeUIComponent,
-            StatText { stat_type: StatType::MagicDefense },
+            StatText { stat_type: StatType::Mdef },
             TextBundle::from_section(
-                player_stats.mgkDefense.to_string(),
+                player_stats.mdef.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -715,20 +786,20 @@ fn update_skill_tree_ui(
     if let Some(player_stats) = player_query.iter().next() {
         for (stat_text, mut text) in stat_query.iter_mut() {
             match stat_text.stat_type {
-                StatType::Attack => {
-                    text.sections[0].value = player_stats.attack.to_string();
+                StatType::Atk => {
+                    text.sections[0].value = player_stats.atk.to_string();
                 }
-                StatType::Defense => {
-                    text.sections[0].value = player_stats.physDefense.to_string();
+                StatType::Def => {
+                    text.sections[0].value = player_stats.def.to_string();
                 }
-                StatType::Magic => {
-                    text.sections[0].value = player_stats.mgk.to_string();
+                StatType::Matk => {
+                    text.sections[0].value = player_stats.matk.to_string();
                 }
-                StatType::MagicDefense => {
-                    text.sections[0].value = player_stats.mgkDefense.to_string();
+                StatType::Mdef => {
+                    text.sections[0].value = player_stats.mdef.to_string();
                 }
-                StatType::Speed => {
-                    text.sections[0].value = player_stats.speed.to_string();
+                StatType::Spd => {
+                    text.sections[0].value = player_stats.spd.to_string();
                 }
                 StatType::MaxHp => {
                     text.sections[0].value = player_stats.max_hp.to_string();
@@ -745,7 +816,7 @@ fn update_skill_tree_ui(
                 StatType::Strength => {
                     text.sections[0].value = player_stats.strength.to_string();
                 }
-                StatType::Mgk => {
+                StatType::Magic => {
                     text.sections[0].value = player_stats.magic.to_string();
                 }
                 StatType::Agility => {
@@ -769,15 +840,15 @@ fn spend_ability_point(
             // Check for key presses and upgrade the appropriate stat
             if input.just_pressed(KeyCode::KeyF) { //press f to upgrade respect *attack
                 player_stats.strength += 1;
-                player_stats.attack += 1;
-                player_stats.physDefense += 1;
+                player_stats.atk += 1;
+                player_stats.def += 1;
             } else if input.just_pressed(KeyCode::KeyG) { //g to upgrade magic
                 player_stats.magic += 1;
-                player_stats.mgk += 1;
-                player_stats.mgkDefense += 1;
+                player_stats.matk += 1;
+                player_stats.mdef += 1;
             } else if input.just_pressed(KeyCode::KeyH) { //h to upgrade speed
                 player_stats.agility += 1;
-                player_stats.speed += 1;
+                player_stats.spd += 1;
             } else if input.just_pressed(KeyCode::KeyJ) { //j to upgrade max_hp all temporary for now
                 player_stats.health += 1;
                 player_stats.hp += 10;
@@ -791,49 +862,37 @@ fn spend_ability_point(
     }
 }
 
-fn spend_skill_point(
-    input: Res<ButtonInput<KeyCode>>, // Directly read input for key presses
-    mut player_query: Query<&mut PlayerStats, With<Player>>,
+fn spend_skill_points(
+    mut player_stats: Mut<'_, PlayerStats>,
+    points: u32,
 ) {
-    if let Ok(mut player_stats) = player_query.get_single_mut() {
         // Check if there are skill points available to spend
         if player_stats.skill_points > 0 {
-            // Check for key presses and upgrade the appropriate stat
-            if input.just_pressed(KeyCode::KeyR) {
-                player_stats.strength += 1;
-            } else if input.just_pressed(KeyCode::KeyT) {
-                player_stats.mgk += 1;
-            } else if input.just_pressed(KeyCode::KeyY) {
-                player_stats.agility += 1;
-            } else if input.just_pressed(KeyCode::KeyU) {
-                player_stats.health += 10;
-            } else {
-                return; // No valid key pressed, exit early
-            }
-            // Deduct an ability point for every successful upgrade
-            player_stats.skill_points -= 1;
+            // Deduct points for every successful upgrade
+            player_stats.skill_points -= points;
         }
-    }
 }
 
 fn unlock_skill_tree_nodes(
     buttons: Res<ButtonInput<MouseButton>>,
     window: Query<&Window>,
-    mut sprites: Query<(&Transform, &Handle<Image>), (With<Sprite>, With<SkillTreeUINode>)>,
+    mut sprites: Query<(&Transform, &Handle<Image>, &mut TextureAtlas, &mut SkillTreeUINode), (With<Sprite>, With<SkillTreeUINode>)>,
     assets: Res<Assets<Image>>,
     cameras: Query<(&Camera, &GlobalTransform)>,
-    // mut ev_unlock_node: EventWriter<UnlockNodeEvent>,
-    // nodes: Query<(Entity, &Sprite), With<SkillTreeUINode>>,
+    mut player_query: Query<&mut PlayerStats, With<Player>>,
 ) {
-    // get node bounds
-    // let mut arr: [(i32, i32, i32, i32); 18];
-    // arr[0] = ();
+    // array that tracks node unlock values
+    let mut node_array: [bool; 18] = [false; 18];
+    let mut n = 0;
+    for (_transform, _image_handle, _texture_atlas, node) in &mut sprites {
+        node_array[n] = node.unlocked;
+        n += 1;
+    }
 
     let (camera, position) = cameras.single();
-    let mut i = 0;
 
-    // for each sprite...
-    for (transform, image_handle) in &mut sprites {
+    // get all matching entities
+    for (transform, image_handle, mut texture_atlas, mut node) in &mut sprites {
         // get the (rectangular) bounds of the sprite
         let image_size = assets.get(image_handle).unwrap().size_f32();
         let scaled = image_size * transform.scale.truncate();
@@ -854,20 +913,132 @@ fn unlock_skill_tree_nodes(
             && p.y < bounds.max.y 
             && buttons.just_pressed(MouseButton::Left)
             {
-                // unlock the node
-                info!("node unlocked");
-                //ev_unlock_node.send(UnlockNodeEvent());
+                if let Ok(mut player_stats) = player_query.get_single_mut() {
+                    if node.unlocked != true {
+                        let curr_sp = player_stats.skill_points;
+                        let i = node.index;
+                        // left
+                        if i == 0 && curr_sp >= 1 {
+                            // unlock the node by changing its unlocked value and sprite using texture atlas index
+                            unlock_node(texture_atlas, node, node_array);
+                            // edit relevant values
+                            player_stats.atk += 1;
+                            spend_skill_points(player_stats, 1);
+                        }
+                        else if i == 1 && node_array[(i-1) as usize] == true && curr_sp >= 1 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.matk += 1;
+                            spend_skill_points(player_stats, 1);
+                        }
+                        else if i == 2 && node_array[(i-1) as usize] == true && curr_sp >= 1{
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.max_hp += 10;
+                            player_stats.hp += 10;
+                            spend_skill_points(player_stats, 1);
+                        }
+
+                        // middle
+                        // top
+                        else if i == 3 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.atk += 2;
+                            spend_skill_points(player_stats, 2);
+                        }
+                        else if i == 4 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.max_hp += 10;
+                            player_stats.hp += 10;
+                            spend_skill_points(player_stats, 2);
+                        }
+                        else if i == 5 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.def += 1;
+                            spend_skill_points(player_stats, 2);
+                        }
+                        // bottom
+                        else if i == 6 && node_array[2] == true && curr_sp >= 2 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.matk += 2;
+                            spend_skill_points(player_stats, 2);
+                        }
+                        else if i == 7 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.spd += 1;
+                            spend_skill_points(player_stats, 2);
+                        }
+                        else if i == 8 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.mdef += 1;
+                            spend_skill_points(player_stats, 2);
+                        }
+
+                        // right
+                        // top
+                        else if i == 9 && node_array[5] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.atk += 1;
+                            player_stats.def += 1;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        else if i == 10 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.max_hp += 15;
+                            player_stats.hp += 15;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        else if i == 11 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.strength += 1;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        // middle
+                        else if i == 12 && (node_array[5] == true || node_array[8] == true) && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.spd += 1;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        else if i == 13 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.max_hp += 20;
+                            player_stats.hp += 20;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        else if i == 14 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.spd += 1;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        // bottom
+                        else if i == 15 && node_array[8] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.magic += 1;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        else if i == 16 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.matk += 1;
+                            player_stats.mdef += 1;
+                            spend_skill_points(player_stats, 3);
+                        }
+                        else if i == 17 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                            unlock_node(texture_atlas, node, node_array);
+                            player_stats.max_hp += 20;
+                            player_stats.hp += 20;
+                            spend_skill_points(player_stats, 3);
+                        }
+                    }
+                }
             }
         }
     }
 }
 
-// fn update_skill_tree_nodes(
-//     mut ev_unlock_node: EventReader<UnlockNodeEvent>,
-// ) {
-    
-//     for ev in ev_unlock_node.read() {
-//         let index = ev.;
-//     }
-// }
-
+fn unlock_node(
+    mut texture_atlas: Mut<TextureAtlas>,
+    mut node: Mut<'_, SkillTreeUINode>,
+    mut node_array: [bool; 18]
+) {
+    texture_atlas.index = 1;
+    node.unlocked = true;
+    node_array[node.index as usize] = true;
+}

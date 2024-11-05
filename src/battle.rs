@@ -54,7 +54,7 @@ fn battle_input(
                 if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
    
                     // Simple attack that deals 10 damage to the enemy
-                    let attack_dmg = physical_attack(5, player_stats.attack, enemy_stats.mgkatk);//why is attack using eenemy magic attack?
+                    let attack_dmg = physical_attack(5, player_stats.atk, enemy_stats.mgkatk);//why is attack using eenemy magic attack?
                     enemy_stats.hp = enemy_stats.hp.saturating_sub(attack_dmg);
                     
                     info!("Enemy was attacked with sword for {} damage! Enemy HP is now: {}", attack_dmg, enemy_stats.hp);
@@ -145,11 +145,11 @@ fn enemy_attack(
     if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
         if let Ok(mut enemy_stats) = enemy_stat_query.get_single_mut() {
             if (attack == 0){
-                enemy_damage = physical_attack(5, enemy_stats.physatk, player_stats.physDefense);
+                enemy_damage = physical_attack(5, enemy_stats.physatk, player_stats.def);
                 player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
                 info!("Enemy hit you for {} damage! Player HP is now: {}",enemy_damage, player_stats.hp);
             } else if (attack == 1){
-                enemy_damage = magic_attack(5, enemy_stats.mgkatk, player_stats.mgkDefense);
+                enemy_damage = magic_attack(5, enemy_stats.mgkatk, player_stats.mdef);
                 player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
                 info!("Enemy hit you with a psychic force for {} damage! Player HP is now: {}",enemy_damage, player_stats.hp);
             } else if (attack == 2){
