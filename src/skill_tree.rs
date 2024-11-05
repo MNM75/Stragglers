@@ -933,6 +933,7 @@ fn unlock_skill_tree_nodes(
                         else if i == 2 && node_array[(i-1) as usize] == true && curr_sp >= 1{
                             unlock_node(texture_atlas, node, node_array);
                             player_stats.max_hp += 10;
+                            player_stats.hp += 10;
                             spend_skill_points(player_stats, 1);
                         }
 
@@ -946,6 +947,7 @@ fn unlock_skill_tree_nodes(
                         else if i == 4 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
                             unlock_node(texture_atlas, node, node_array);
                             player_stats.max_hp += 10;
+                            player_stats.hp += 10;
                             spend_skill_points(player_stats, 2);
                         }
                         else if i == 5 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
@@ -980,6 +982,7 @@ fn unlock_skill_tree_nodes(
                         else if i == 10 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
                             unlock_node(texture_atlas, node, node_array);
                             player_stats.max_hp += 15;
+                            player_stats.hp += 15;
                             spend_skill_points(player_stats, 3);
                         }
                         else if i == 11 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
@@ -996,6 +999,7 @@ fn unlock_skill_tree_nodes(
                         else if i == 13 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
                             unlock_node(texture_atlas, node, node_array);
                             player_stats.max_hp += 20;
+                            player_stats.hp += 20;
                             spend_skill_points(player_stats, 3);
                         }
                         else if i == 14 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
@@ -1017,6 +1021,7 @@ fn unlock_skill_tree_nodes(
                         else if i == 17 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
                             unlock_node(texture_atlas, node, node_array);
                             player_stats.max_hp += 20;
+                            player_stats.hp += 20;
                             spend_skill_points(player_stats, 3);
                         }
                     }
