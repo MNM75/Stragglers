@@ -169,8 +169,7 @@ fn create_path(grid: &mut Vec<Vec<GridCell>>, row: usize, col: usize) {
     // Mark the current cell with the chosen direction
     mark_with_direction(grid, current_row, current_col, direction);
 
-    // Print grid for debugging (after marking the current cell with direction)
-    print_grid(grid);
+  
 
     // Get the new cell coordinates based on the direction
     let (new_row, new_col) = get_adjacent_cell(current_row, current_col, direction);
@@ -182,6 +181,10 @@ fn create_path(grid: &mut Vec<Vec<GridCell>>, row: usize, col: usize) {
 
         // If the adjacent cell is a Tile, mark the current cell as a Tile and stop
         grid[current_row][current_col].cell_type = Cell::Tile;
+        
+        // Mark the current cell with the chosen direction
+        mark_with_direction(grid, current_row, current_col, direction);
+
         mark_visited(grid, current_row, current_col);
     } else {
         // If the new cell is out of bounds, stop recursion
@@ -345,4 +348,3 @@ fn create_room(
     // Print the grid for debugging
     print_grid(&grid);
 }
-
