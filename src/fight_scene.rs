@@ -79,12 +79,18 @@ fn init_upon_collision(
 fn setup_battle_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
 ) {
-        
+    //todo: this doesn't work
+    let enemy_texture_handle = if let Ok(enemy_stats) = enemy_stat_query.get_single() {
+        asset_server.load(enemy_stats.sprite_path())
+    } else {
+        asset_server.load("tileProto.png")
+    };
+
 
     let bg_texture_handle = asset_server.load("fightBackground.png");
     let player_texture_handle = asset_server.load("L_static.png");
-    let enemy_texture_handle = asset_server.load("enemyPlaceHolder.png");
     let healthbar_background_handle = asset_server.load("healthbarBackground.png");
     let healthbar_handle = asset_server.load("healthbar.png");
 
@@ -103,7 +109,6 @@ fn setup_battle_ui(
         FightSprites,
         FightScene
     ));
-
     // player sprite
     commands.spawn((
         SpriteBundle {
