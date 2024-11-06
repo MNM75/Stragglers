@@ -1,4 +1,7 @@
 use bevy::prelude::*;
+use bevy::input::common_conditions::input_just_pressed;
+use std::time::Duration;
+
 use crate::GameState;
 use crate::events::EnemyCollisionEvent;
 use crate::enemy::EnemyStats;
@@ -18,6 +21,16 @@ struct FightSprites;
 
 #[derive(Component)]
 struct PlayerSprite;
+
+
+
+#[derive(Component)]
+struct AnimationConfig {
+    first_sprite_index: usize,
+    last_sprite_index: usize,
+    fps: u8,
+    frame_timer: Timer,
+}
 
 #[derive(Component)]
 struct EnemySprite;
@@ -52,12 +65,56 @@ impl Plugin for FightScenePlugin {
         app.add_systems(Startup, setup_battle_ui);
         app.add_systems(PostStartup, hide_battle_ui);
         app.add_systems(OnEnter(GameState::BattleMode), show_battle_ui);
-        app.add_systems(OnExit(GameState::BattleMode), hide_battle_ui);        
+        app.add_systems(OnExit(GameState::BattleMode), hide_battle_ui);
+        app.add_systems(Update, execute_animations); 
+        app.add_systems(Update, trigger_animation::<PlayerSprite>.run_if(input_just_pressed(KeyCode::Digit1)));       
         app.add_systems(Update, init_upon_collision);
         app.add_systems(Update, update_enemy_health_bar);
     }
 }
+fn trigger_animation<S: Component>(mut query: Query<&mut AnimationConfig, With<S>>) {
+    let mut animation = query.single_mut();
+    // create a new timer when the animation is triggered
+    animation.frame_timer = AnimationConfig::timer_from_fps(animation.fps);
+}
 
+impl AnimationConfig {
+    fn new(first: usize, last: usize, fps: u8) -> Self {
+        Self {
+            first_sprite_index: first,
+            last_sprite_index: last,
+            fps,
+            frame_timer: Self::timer_from_fps(fps),
+        }
+    }
+
+    fn timer_from_fps(fps: u8) -> Timer {
+        Timer::new(Duration::from_secs_f32(1.0 / (fps as f32)), TimerMode::Once)
+    }
+}
+
+fn execute_animations(
+    time: Res<Time>,
+    mut query: Query<(&mut AnimationConfig, &mut TextureAtlas)>,
+) {
+    for (mut config, mut atlas) in &mut query {
+        // we track how long the current sprite has been displayed for
+        config.frame_timer.tick(time.delta());
+
+        // If it has been displayed for the user-defined amount of time (fps)...
+        if config.frame_timer.just_finished() {
+            if atlas.index == config.last_sprite_index {
+                // ...and it IS the last frame, then we move back to the first frame and stop.
+                atlas.index = config.first_sprite_index;
+            } else {
+                // ...and it is NOT the last frame, then we move to the next frame...
+                atlas.index += 1;
+                // ...and reset the frame timer to start counting all over again
+                config.frame_timer = AnimationConfig::timer_from_fps(config.fps);
+            }
+        }
+    }
+}
 // open battle scene upon enemy collision (does not close upon re-collision)
 fn init_upon_collision(
     state: Res<State<GameState>>,
@@ -79,11 +136,17 @@ fn init_upon_collision(
 fn setup_battle_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
         
 
     let bg_texture_handle = asset_server.load("fightBackground.png");
-    let player_texture_handle = asset_server.load("L_static.png");
+
+    let player_texture_handle = asset_server.load("L_swordAnimation.png");
+    let LSword_layout = TextureAtlasLayout::from_grid(UVec2::new(216, 202), 8, 1, None, None);
+    let Lsword_layout_handle = texture_atlases.add(LSword_layout);
+    let animation_config_1 = AnimationConfig::new(1, 7, 24);
+
     let enemy_texture_handle = asset_server.load("enemyPlaceHolder.png");
     let healthbar_background_handle = asset_server.load("healthbarBackground.png");
     let healthbar_handle = asset_server.load("healthbar.png");
@@ -107,15 +170,18 @@ fn setup_battle_ui(
     // player sprite
     commands.spawn((
         SpriteBundle {
-            texture: player_texture_handle,
-            transform: Transform {
-                translation: Vec3::new(-400., -100., 1.), // position player sprite
-                scale: Vec3::new(2.5, 2.5, 2.5),         // adjust player sprite size
-                ..default()
-            },
+            transform: Transform::from_scale(Vec3::splat(2.5))
+                .with_translation(Vec3::new(-400.0, -100.0, 1.0)),
+            texture: player_texture_handle.clone(),
             ..default()
         },
+        TextureAtlas {
+            layout: Lsword_layout_handle.clone(),
+            index: animation_config_1.first_sprite_index,
+        },
+        
         PlayerSprite,
+        animation_config_1,
         FightSprites,
         FightScene
     ));
@@ -223,6 +289,8 @@ fn setup_battle_ui(
         FightScene
     ));
 }
+
+
 
 //NOT completely working, feel free to remove if needed
 //  - green health bar only moves to the left of the screen after taking damage, going out of bounds instead of completely disappearing

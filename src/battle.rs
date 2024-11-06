@@ -60,6 +60,7 @@ fn battle_input(
                     info!("Enemy was attacked with sword for {} damage! Enemy HP is now: {}", attack_dmg, enemy_stats.hp);
 
                     if enemy_stats.hp <= 0 {
+                        
                         info!("Enemy defeated!");
                         despawn_closest_enemy(commands, enemy_query, player_query);  // Despawn the enemy if defeated
                         next_state.set(GameState::InGame);
