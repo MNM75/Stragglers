@@ -54,7 +54,7 @@ fn battle_input(
                 if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
    
                     // Simple attack that deals 10 damage to the enemy
-                    let attack_dmg = physical_attack(5, player_stats.atk, enemy_stats.mgkatk);//why is attack using eenemy magic attack?
+                    let attack_dmg = physical_attack(5, player_stats.atk, enemy_stats.physdef);//why is attack using eenemy magic attack?
                     enemy_stats.hp = enemy_stats.hp.saturating_sub(attack_dmg);
                     
                     info!("Enemy was attacked with sword for {} damage! Enemy HP is now: {}", attack_dmg, enemy_stats.hp);
@@ -77,7 +77,7 @@ fn battle_input(
                 if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
    
                     // Simple attack that deals 10 damage to the enemy
-                    let attack_dmg = magic_attack(5, player_stats.magic, enemy_stats.mgkdef);
+                    let attack_dmg = magic_attack(5, player_stats.matk, enemy_stats.mgkdef);
                     enemy_stats.hp = enemy_stats.hp.saturating_sub(attack_dmg);
                     
                     info!("Enemy was attacked with magic for {} damage! Enemy HP is now: {}", attack_dmg, enemy_stats.hp);
