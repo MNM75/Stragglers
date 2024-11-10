@@ -346,3 +346,135 @@ fn spawn_door(
         Door
     ));
 }
+
+
+// utility function to create small battle rooms
+fn create_battle_room(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
+    start_position: Vec3,
+    entrance_side: &str,
+) {
+    const ROOM_SIZE: usize = 6;
+    const HALLWAY_LENGTH: usize = 2;
+    let mut t = start_position;
+
+    // load tile texture
+    let tile_sheet_handle: Handle<Image> = asset_server.load("mossTiles.png");
+    let tile_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 2, 2, None, None);
+    let tile_layout_len = tile_layout.textures.len();
+    let tile_layout_handle = texture_atlases.add(tile_layout);
+
+    // load wall texture
+    let wall_sheet_handle: Handle<Image> = asset_server.load("wall.png");
+    let wall_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
+    let wall_layout_len = wall_layout.textures.len();
+    let wall_layout_handle = texture_atlases.add(wall_layout);
+
+    let mut t = start_position; // use the given starting position
+
+    let mut i = 0;
+    let mut y: usize = 0;
+
+    // while 10 rows are not filled, apply a tile to each column in a row
+    while (y as f32) < (9 as f32) {
+        // if current row is filled, move to next row up
+        if i == 10 {
+            t += Vec3::new(-10.0 * TILE_SIZE as f32, TILE_SIZE as f32, 0.); // move up for the next row
+            i = 0;
+            y += 1;
+        }
+
+        // while a row has less than 10 tiles, keep adding
+        while (i as f32) * (TILE_SIZE as f32) < 10.0 * TILE_SIZE as f32 {
+            // determine if this tile should be a wall
+            let is_wall = y == 0 || y == 9 || i == 9 || (i == 0 && y != 4 && y != 5); // opening on the left side of new room
+
+            if is_wall {
+                // add wall tile
+                let rand: usize = random();
+                commands
+                    .spawn(( 
+                        SpriteBundle {
+                            texture: wall_sheet_handle.clone(),
+                            transform: Transform {
+                                translation: t,
+                                ..default()
+                            },
+                            ..default()
+                        },
+                        TextureAtlas {
+                            index: i % wall_layout_len,
+                            layout: wall_layout_handle.clone(),
+                        },
+                        Wall,
+                    ))
+                    .insert(Background);
+            } else {
+                // add regular tile
+                let rand: usize = random();
+                commands
+                    .spawn(( 
+                        SpriteBundle {
+                            texture: tile_sheet_handle.clone(),
+                            transform: Transform {
+                                translation: t,
+                                ..default()
+                            },
+                            ..default()
+                        },
+                        TextureAtlas {
+                            index: rand % tile_layout_len,
+                            layout: tile_layout_handle.clone(),
+                        },
+                        Tile,
+                    ))
+                    .insert(Background);
+            }
+
+            i += 1;
+            t += Vec3::new(TILE_SIZE as f32, 0., 0.); // move to the right for the next tile
+        }
+    }
+
+    // entrance hallway
+    match entrance_side {
+        "top" => {
+            let hallway_start = t + Vec3::new(
+                ROOM_SIZE as f32 / 2.0 * TILE_SIZE as f32, 
+                TILE_SIZE as f32, 
+                0.0);
+            create_hallway(commands, asset_server, texture_atlases, hallway_start);
+        }
+        "bottom" => {
+            let hallway_start = t + Vec3::new(
+                ROOM_SIZE as f32 / 2.0 * TILE_SIZE as f32, 
+                -(ROOM_SIZE as f32 * TILE_SIZE as f32),
+                 0.0);
+            create_hallway(commands, asset_server, texture_atlases, hallway_start);
+        }
+        "left" => {
+            let hallway_start = t + Vec3::new(
+                -(TILE_SIZE as f32), 
+                -(ROOM_SIZE as f32 / 2.0 * TILE_SIZE as f32), 
+                0.0);
+            create_hallway(commands, asset_server, texture_atlases, hallway_start);
+        }
+        "right" => {
+            let hallway_start = t + Vec3::new(
+                ROOM_SIZE as f32 * TILE_SIZE as f32, 
+                -(ROOM_SIZE as f32 / 2.0 * TILE_SIZE as f32), 
+                0.0);
+            create_hallway(commands, asset_server, texture_atlases, hallway_start);
+        }
+        _ => panic!("Invalid entrance side! Must be one of: 'top', 'bottom', 'left', 'right'."),
+    };
+
+     ////// spawning enemy at random point in room ////// 
+     let new_rand: usize = random();
+     let random_x = start_position.x + random::<f32>() * ((start_position.x + ROOM_SIZE as f32 * TILE_SIZE as f32) - start_position.x);
+     let random_y = start_position.y + random::<f32>() * ((start_position.y - (ROOM_SIZE - 1) as f32 * TILE_SIZE as f32) - start_position.y);
+     let enemy_position = Vec3::new(random_x, random_y, 1.0);
+     spawn_enemy(commands, asset_server, texture_atlases, enemy_position, 1);
+}
