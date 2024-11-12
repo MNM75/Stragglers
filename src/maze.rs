@@ -20,7 +20,6 @@ enum Cell {
 }
 
 
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Direction {
     Up,
@@ -73,7 +72,7 @@ fn mark_wall(grid: &mut Vec<Vec<GridCell>>, row: usize, col: usize) {
 }
 
 // Mark a cell as visited and as a wall
-fn mark_visited(grid: &mut Vec<Vec<GridCell>>, row: usize, col: usize) {
+fn add_to_UST(grid: &mut Vec<Vec<GridCell>>, row: usize, col: usize) {
     if row < grid.len() && col < grid[row].len() {
         // Mark the cell as visited
         grid[row][col].marked = true;
@@ -81,7 +80,7 @@ fn mark_visited(grid: &mut Vec<Vec<GridCell>>, row: usize, col: usize) {
 }
 
 // Check if a cell is visited
-fn is_visited(grid: &Vec<Vec<GridCell>>, row: usize, col: usize) -> bool {
+fn in_UST(grid: &Vec<Vec<GridCell>>, row: usize, col: usize) -> bool {
     if row < grid.len() && col < grid[row].len() {
         return grid[row][col].marked;
     }
@@ -95,7 +94,7 @@ fn get_random_unvisited_cell(grid: &Vec<Vec<GridCell>>) -> Option<(usize, usize)
     // Collect all unvisited cells
     for row in 0..grid.len() {
         for col in 0..grid[row].len() {
-            if !is_visited(grid, row, col) {
+            if !in_UST(grid, row, col) {
                 unvisited_cells.push((row, col));
             }
         }
@@ -111,8 +110,8 @@ fn get_random_unvisited_cell(grid: &Vec<Vec<GridCell>>) -> Option<(usize, usize)
 }
 
 
-// Function to get the adjacent cell based on the direction
-fn get_adjacent_cell(row: usize, col: usize, direction: Direction) -> (usize, usize) {
+// Function to get the next randomly selected cell based on the direction
+fn get_next_cell(row: usize, col: usize, direction: Direction) -> (usize, usize) {
     match direction {
         Direction::Up => (row.wrapping_sub(1), col),
         Direction::Down => (row + 1, col),
@@ -133,8 +132,6 @@ fn mark_with_direction(
         grid[row][col].direction = Some(direction); // Also set the direction explicitly
     }
 }
-
-
 
 // Function to randomly pick one of the four directions
 fn random_direction() -> Direction {
@@ -157,39 +154,34 @@ fn create_path(grid: &mut Vec<Vec<GridCell>>, row: usize, col: usize) {
     let mut current_row = row;
     let mut current_col = col;
 
-    // If the current cell is already a Tile, stop
-    if let Cell::Tile = grid[current_row][current_col].cell_type {
-        println!("Found a Tile at ({}, {})", current_row, current_col);
+    // If the current cell is part of the UST, stop processing
+    if in_UST(&grid, row, col){
+        println!("Found a path at ({}, {})", current_row, current_col);
         return; // Stop if we find a Tile
     }
 
-    // Randomly choose a direction to move in
-    let direction = random_direction();
+  // Assuming `current_row` and `current_col` are the current cell coordinates
 
-    // Mark the current cell with the chosen direction
-    mark_with_direction(grid, current_row, current_col, direction);
+    let mut direction = random_direction(); // Start with a random direction
 
-  
+    loop {
+        // Get the new cell coordinates based on the current position and direction
+        let (new_row, new_col) = get_next_cell(current_row, current_col, direction);
 
-    // Get the new cell coordinates based on the direction
-    let (new_row, new_col) = get_adjacent_cell(current_row, current_col, direction);
+        // Check if the new cell is within bounds
+        if is_within_bounds(grid, new_row, new_col) {
+              // Mark the current cell with the chosen direction
+            mark_with_direction(grid, current_row, current_col, direction);
+            
+            // Recursively move to the new cell
+            create_path(grid, new_row, new_col);
 
-    // Check if the new cell is within bounds
-    if is_within_bounds(grid, new_row, new_col) {
-        // Recursively move to the new cell
-        create_path(grid, new_row, new_col);
-
-        // If the adjacent cell is a Tile, mark the current cell as a Tile and stop
-        grid[current_row][current_col].cell_type = Cell::Tile;
-        
-        // Mark the current cell with the chosen direction
-        mark_with_direction(grid, current_row, current_col, direction);
-
-        mark_visited(grid, current_row, current_col);
-    } else {
-        // If the new cell is out of bounds, stop recursion
-        println!("Out of bounds at ({}, {}). Stopping path.", new_row, new_col);
-        return;
+            add_to_UST(grid, current_row, current_col);
+            break;
+        } else {
+            // If out of bounds, pick a new random direction and try again
+            direction = random_direction();
+        }
     }
 }
 
@@ -242,8 +234,8 @@ fn create_room(
     let mut t = Vec3::new(-x_bound, -y_bound, 0.);
 
     /////////////////// Attempt at Wilson's Algo ///////////////////
-    const GRID_WIDTH: usize = 10; // Width of the grid
-    const GRID_HEIGHT: usize = 10; // Height of the grid
+    const GRID_WIDTH: usize = 7; // Width of the grid
+    const GRID_HEIGHT: usize = 7; // Height of the grid
 
     let mut grid = create_grid(GRID_WIDTH, GRID_HEIGHT);
 
@@ -256,7 +248,7 @@ fn create_room(
     let random_cell = &grid[random_row][random_col];
 
     // Mark the randomly selected cell as visited (mutable borrow)
-    mark_visited(&mut grid, random_row, random_col);
+    add_to_UST(&mut grid, random_row, random_col);
     grid[random_row][random_col].cell_type = Cell::Tile; // Mark it as a Tile
 
     // Now that the cell is marked, we can access it immutably
