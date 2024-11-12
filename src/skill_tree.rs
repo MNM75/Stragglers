@@ -1,17 +1,12 @@
 use bevy::{
-    color::palettes::css::BLACK,
-    color::palettes::css::WHITE,
+    color::palettes::css::{BLACK, WHITE},
     prelude::*
 };
 
 use crate::GameState;
-use crate::player::PlayerStats;
-use crate::player::Player;
-use crate::player::init_player;
-use crate::WIN_W;
-use crate::WIN_H;
-use crate::player::LEVEL_W;
-use crate::player::LEVEL_H;
+use crate::player::{PlayerStats, BonusStats, Player, init_player};
+use crate::{WIN_W, WIN_H};
+use crate::player::{LEVEL_W, LEVEL_H};
 
 #[derive(Component)]
 struct SkillTreeUIBackground;
@@ -409,7 +404,7 @@ fn load_skill_tree_ui(
             SkillTreeUIComponent,
             StatText { stat_type: StatType::AbilityPoints },
             TextBundle::from_section(
-                "0",
+                player_stats.ability_points.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -430,7 +425,7 @@ fn load_skill_tree_ui(
             SkillTreeUIComponent,
             StatText { stat_type: StatType::SkillPoints },
             TextBundle::from_section(
-                "0",
+                player_stats.skill_points.to_string(),
                 TextStyle {
                     font_size: 20.0,
                     color: bevy::prelude::Color::Srgba(BLACK),
@@ -657,6 +652,25 @@ fn load_skill_tree_ui(
                 ..default()
             })
         ));
+
+        // temporary descriptive text  ------------------------------------------------------------
+        commands.spawn((
+            SkillTreeUIComponent,
+            TextBundle::from_section(
+                "Press 'F, G, H, or J' to upgrade strength, magic, agility, or health\nup to a base total of 7\nClick on a node to unlock bonus stats",
+                TextStyle {
+                    font_size: 20.0,
+                    color: bevy::prelude::Color::Srgba(WHITE),
+                    ..default()
+                },
+            )
+            .with_style(Style {
+                position_type: PositionType::Absolute,
+                bottom: Val::Px(10.0),
+                right: Val::Px(10.0),
+                ..default()
+            })
+        ));
     }
 }
 
@@ -780,9 +794,17 @@ fn toggle_skill_tree_ui(
 }
 
 fn update_skill_tree_ui(
-    player_query: Query<&PlayerStats, With<Player>>,
+    mut player_query: Query<&mut PlayerStats, With<Player>>,
     mut stat_query: Query<(&StatText, &mut Text), With<SkillTreeUIComponent>>,
+    mut bonus_query:  Query<&mut BonusStats>,
 ) {
+    // update the player stats before updating the stats text
+    if let Ok(bonus) = bonus_query.get_single_mut(){
+        if let Ok(mut player_stats) = player_query.get_single_mut() {
+            player_stats.update_stats(bonus);
+        }
+    }
+    // update the stats text
     if let Some(player_stats) = player_query.iter().next() {
         for (stat_text, mut text) in stat_query.iter_mut() {
             match stat_text.stat_type {
@@ -840,19 +862,13 @@ fn spend_ability_point(
             // Check for key presses and upgrade the appropriate stat
             if input.just_pressed(KeyCode::KeyF) { //press f to upgrade respect *attack
                 player_stats.strength += 1;
-                player_stats.atk += 1;
-                player_stats.def += 1;
             } else if input.just_pressed(KeyCode::KeyG) { //g to upgrade magic
                 player_stats.magic += 1;
-                player_stats.matk += 1;
-                player_stats.mdef += 1;
             } else if input.just_pressed(KeyCode::KeyH) { //h to upgrade speed
                 player_stats.agility += 1;
-                player_stats.spd += 1;
             } else if input.just_pressed(KeyCode::KeyJ) { //j to upgrade max_hp all temporary for now
                 player_stats.health += 1;
-                player_stats.hp += 10;
-                player_stats.max_hp += 10;
+                player_stats.heal(10);
             } else {
                 return; // No valid key pressed, exit early
             }
@@ -880,6 +896,7 @@ fn unlock_skill_tree_nodes(
     assets: Res<Assets<Image>>,
     cameras: Query<(&Camera, &GlobalTransform)>,
     mut player_query: Query<&mut PlayerStats, With<Player>>,
+    mut bonus_query:  Query<&mut BonusStats>,
 ) {
     // array that tracks node unlock values
     let mut node_array: [bool; 18] = [false; 18];
@@ -892,7 +909,7 @@ fn unlock_skill_tree_nodes(
     let (camera, position) = cameras.single();
 
     // get all matching entities
-    for (transform, image_handle, mut texture_atlas, mut node) in &mut sprites {
+    for (transform, image_handle, texture_atlas, node) in &mut sprites {
         // get the (rectangular) bounds of the sprite
         let image_size = assets.get(image_handle).unwrap().size_f32();
         let scaled = image_size * transform.scale.truncate();
@@ -914,117 +931,116 @@ fn unlock_skill_tree_nodes(
             && buttons.just_pressed(MouseButton::Left)
             {
                 if let Ok(mut player_stats) = player_query.get_single_mut() {
-                    if node.unlocked != true {
-                        let curr_sp = player_stats.skill_points;
-                        let i = node.index;
-                        // left
-                        if i == 0 && curr_sp >= 1 {
-                            // unlock the node by changing its unlocked value and sprite using texture atlas index
-                            unlock_node(texture_atlas, node, node_array);
-                            // edit relevant values
-                            player_stats.atk += 1;
-                            spend_skill_points(player_stats, 1);
-                        }
-                        else if i == 1 && node_array[(i-1) as usize] == true && curr_sp >= 1 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.matk += 1;
-                            spend_skill_points(player_stats, 1);
-                        }
-                        else if i == 2 && node_array[(i-1) as usize] == true && curr_sp >= 1{
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.max_hp += 10;
-                            player_stats.hp += 10;
-                            spend_skill_points(player_stats, 1);
-                        }
+                    if let Ok(mut bonus_stats) = bonus_query.get_single_mut() {
+                        if node.unlocked != true {
+                            let curr_sp = player_stats.skill_points;
+                            let i = node.index;
+                            // left
+                            if i == 0 && curr_sp >= 1 {
+                                // unlock the node by changing its unlocked value and sprite using texture atlas index
+                                unlock_node(texture_atlas, node, node_array);
+                                // edit relevant values
+                                bonus_stats.max_hp += 10;
+                                player_stats.heal(10);
+                                spend_skill_points(player_stats, 1);
+                            }
+                            else if i == 1 && node_array[(i-1) as usize] == true && curr_sp >= 1 {
+                                unlock_node(texture_atlas, node, node_array);
+                                bonus_stats.atk += 3;
+                                spend_skill_points(player_stats, 1);
+                            }
+                            else if i == 2 && node_array[(i-1) as usize] == true && curr_sp >= 1{
+                                unlock_node(texture_atlas, node, node_array);
+                                bonus_stats.matk += 3;
+                                player_stats.update_stats(bonus_stats);
+                                spend_skill_points(player_stats, 1);
+                            }
 
-                        // middle
-                        // top
-                        else if i == 3 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.atk += 2;
-                            spend_skill_points(player_stats, 2);
-                        }
-                        else if i == 4 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.max_hp += 10;
-                            player_stats.hp += 10;
-                            spend_skill_points(player_stats, 2);
-                        }
-                        else if i == 5 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.def += 1;
-                            spend_skill_points(player_stats, 2);
-                        }
-                        // bottom
-                        else if i == 6 && node_array[2] == true && curr_sp >= 2 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.matk += 2;
-                            spend_skill_points(player_stats, 2);
-                        }
-                        else if i == 7 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.spd += 1;
-                            spend_skill_points(player_stats, 2);
-                        }
-                        else if i == 8 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.mdef += 1;
-                            spend_skill_points(player_stats, 2);
-                        }
+                            // middle
+                            // top
+                            else if i == 3 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                                unlock_node(texture_atlas, node, node_array);
+                                bonus_stats.def += 6;
+                                spend_skill_points(player_stats, 2);
+                            }
+                            else if i == 4 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                                unlock_node(texture_atlas, node, node_array);
+                                bonus_stats.atk += 6;
+                                spend_skill_points(player_stats, 2);
+                            }
+                            else if i == 5 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                                unlock_node(texture_atlas, node, node_array);
+                                bonus_stats.max_hp += 15;
+                                player_stats.heal(15);
+                                spend_skill_points(player_stats, 2);
+                            }
+                            // bottom
+                            else if i == 6 && node_array[2] == true && curr_sp >= 2 {
+                                unlock_node(texture_atlas, node, node_array);
+                                bonus_stats.mdef += 9;
+                                spend_skill_points(player_stats, 2);
+                            }
+                            else if i == 7 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                                unlock_node(texture_atlas, node, node_array);
+                                bonus_stats.spd += 1;
+                                spend_skill_points(player_stats, 2);
+                            }
+                            else if i == 8 && node_array[(i-1) as usize] == true && curr_sp >= 2 {
+                                unlock_node(texture_atlas, node, node_array);
+                                bonus_stats.matk += 6;
+                                spend_skill_points(player_stats, 2);
+                            }
 
-                        // right
-                        // top
-                        else if i == 9 && node_array[5] == true && curr_sp >= 3 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.atk += 1;
-                            player_stats.def += 1;
-                            spend_skill_points(player_stats, 3);
-                        }
-                        else if i == 10 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.max_hp += 15;
-                            player_stats.hp += 15;
-                            spend_skill_points(player_stats, 3);
-                        }
-                        else if i == 11 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.strength += 1;
-                            spend_skill_points(player_stats, 3);
-                        }
-                        // middle
-                        else if i == 12 && (node_array[5] == true || node_array[8] == true) && curr_sp >= 3 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.spd += 1;
-                            spend_skill_points(player_stats, 3);
-                        }
-                        else if i == 13 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.max_hp += 20;
-                            player_stats.hp += 20;
-                            spend_skill_points(player_stats, 3);
-                        }
-                        else if i == 14 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.spd += 1;
-                            spend_skill_points(player_stats, 3);
-                        }
-                        // bottom
-                        else if i == 15 && node_array[8] == true && curr_sp >= 3 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.magic += 1;
-                            spend_skill_points(player_stats, 3);
-                        }
-                        else if i == 16 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.matk += 1;
-                            player_stats.mdef += 1;
-                            spend_skill_points(player_stats, 3);
-                        }
-                        else if i == 17 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
-                            unlock_node(texture_atlas, node, node_array);
-                            player_stats.max_hp += 20;
-                            player_stats.hp += 20;
-                            spend_skill_points(player_stats, 3);
+                            // right
+                            // top
+                            else if i == 9 && node_array[5] == true && curr_sp >= 3 {
+                                unlock_node(texture_atlas, node, node_array);
+                                bonus_stats.atk += 9;
+                                spend_skill_points(player_stats, 3);
+                            }
+                            else if i == 10 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                                unlock_node(texture_atlas, node, node_array);
+                                bonus_stats.def += 12;
+                                spend_skill_points(player_stats, 3);
+                            }
+                            else if i == 11 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                                unlock_node(texture_atlas, node, node_array);
+                                player_stats.strength += 1;
+                                spend_skill_points(player_stats, 3);
+                            }
+                            // middle
+                            else if i == 12 && (node_array[5] == true || node_array[8] == true) && curr_sp >= 3 {
+                                unlock_node(texture_atlas, node, node_array);
+                                bonus_stats.spd += 1;
+                                spend_skill_points(player_stats, 3);
+                            }
+                            else if i == 13 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                                unlock_node(texture_atlas, node, node_array);
+                                player_stats.ability_points += 1;
+                                spend_skill_points(player_stats, 3);
+                            }
+                            else if i == 14 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                                unlock_node(texture_atlas, node, node_array);
+                                bonus_stats.max_hp += 25;
+                                player_stats.heal(25);
+                                spend_skill_points(player_stats, 3);
+                            }
+                            // bottom
+                            else if i == 15 && node_array[8] == true && curr_sp >= 3 {
+                                unlock_node(texture_atlas, node, node_array);
+                                bonus_stats.matk += 9;
+                                spend_skill_points(player_stats, 3);
+                            }
+                            else if i == 16 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                                unlock_node(texture_atlas, node, node_array);
+                                bonus_stats.mdef += 9;
+                                spend_skill_points(player_stats, 3);
+                            }
+                            else if i == 17 && node_array[(i-1) as usize] == true && curr_sp >= 3 {
+                                unlock_node(texture_atlas, node, node_array);
+                                player_stats.magic += 1;
+                                spend_skill_points(player_stats, 3);
+                            }
                         }
                     }
                 }

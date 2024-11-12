@@ -1,12 +1,9 @@
 use bevy::prelude::*;
-use crate::map::Wall;
-use crate::map::Door;
+use crate::map::{Wall, Door};
 use crate::enemy::Enemy;
-use crate::events::EnemyCollisionEvent;
-use crate::events::EndGameEvent;
+use crate::events::{EnemyCollisionEvent, EndGameEvent};
 use crate::GameState;
-use crate::WIN_W;
-use crate::WIN_H; 
+use crate::{WIN_W, WIN_H}; 
 
 const TILE_SIZE: u32 = 144;
 
@@ -102,11 +99,11 @@ impl Plugin for PlayerPlugin{
     impl PlayerStats {
         pub fn new() -> Self {
             Self {
-                atk: 1,
-                def: 1,
-                matk: 1,
-                mdef: 1,
-                spd: 1,
+                atk: 0,
+                def: 0,
+                matk: 0,
+                mdef: 0,
+                spd: 0,
                 max_hp: 10,
                 hp: 10,
                 skill_points: 4,
@@ -118,13 +115,48 @@ impl Plugin for PlayerPlugin{
             }
         }
 
-        pub fn calculate_max_hp(&self) -> u32 {
-            self.hp * 10  // Example: Each point in health adds 10 to max HP
+        // pub fn calculate_max_hp(&self) -> u32 {
+        //     self.hp * 10  // Example: Each point in health adds 10 to max HP
+        // }
+
+        // pub fn update_max_hp(&mut self) {
+        //     self.max_hp = self.calculate_max_hp();
+        // }
+
+        pub fn heal(&mut self, amt: u32) {
+            self.hp += amt;
         }
 
-        pub fn update_max_hp(&mut self) {
-            self.max_hp = self.calculate_max_hp();
-        }        
+        pub fn update_stats(&mut self, bonus: Mut<BonusStats>) {
+            self.atk = 5 * self.strength + bonus.atk;
+            self.def = 5 * self.strength + bonus.def;
+            self.matk = 5 * self.magic + bonus.matk;
+            self.mdef = 5 * self.magic + bonus.mdef;
+            self.spd = self.agility + bonus.spd;
+            self.max_hp = self.health * 10 + bonus.max_hp;
+        }
+    }
+
+    #[derive(Component)]
+    pub struct BonusStats {
+        pub atk: u32,
+        pub def: u32,
+        pub matk: u32,
+        pub mdef: u32,
+        pub spd: u32,
+        pub max_hp: u32,
+    }
+    impl BonusStats {
+        pub fn new() -> Self {
+            Self {
+                atk: 0,
+                def: 0,
+                matk: 0,
+                mdef: 0,
+                spd: 0,
+                max_hp: 0,
+            }
+        }
     }
 
 pub fn init_player(
@@ -156,6 +188,7 @@ pub fn init_player(
         Velocity::new(),
         Player,
             PlayerStats::new(),
+            BonusStats::new(),
     ));
 }
 
