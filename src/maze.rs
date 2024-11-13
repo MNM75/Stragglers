@@ -19,8 +19,6 @@ enum Cell {
     Path(Direction), // This stores the direction when it's part of the path
 }
 
-
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Direction {
     Up,
@@ -33,7 +31,7 @@ enum Direction {
 struct GridCell {
     cell_type: Cell,
     marked: bool,
-    direction: Option<Direction>,  // New field to store direction for Tiles
+    direction: Option<Direction>, // New field to store direction for Tiles
 }
 
 impl GridCell {
@@ -110,9 +108,8 @@ fn get_random_unvisited_cell(grid: &Vec<Vec<GridCell>>) -> Option<(usize, usize)
     }
 }
 
-
-// Function to get the adjacent cell based on the direction
-fn get_adjacent_cell(row: usize, col: usize, direction: Direction) -> (usize, usize) {
+// Function to get the next cell based on the direction
+fn get_next_cell(row: usize, col: usize, direction: Direction) -> (usize, usize) {
     match direction {
         Direction::Up => (row.wrapping_sub(1), col),
         Direction::Down => (row + 1, col),
@@ -134,14 +131,13 @@ fn mark_with_direction(
     }
 }
 
-
-
 // Function to randomly pick one of the four directions
 fn random_direction() -> Direction {
     let mut rng = rand::thread_rng();
     let direction_index: usize = rng.gen_range(0..4); // Generate a random index (0 to 3)
-    
-    match direction_index { // 0, 1, 2, or 3
+
+    match direction_index {
+        // 0, 1, 2, or 3
         0 => Direction::Up,
         1 => Direction::Down,
         2 => Direction::Left,
@@ -153,6 +149,11 @@ fn random_direction() -> Direction {
 fn is_within_bounds(grid: &Vec<Vec<GridCell>>, row: usize, col: usize) -> bool {
     row < grid.len() && col < grid[row].len()
 }
+
+fn has_direction(cell: &GridCell) -> bool {
+    cell.direction.is_some() // Returns true if the direction is set (i.e., Some(Direction))
+}
+
 fn create_path(grid: &mut Vec<Vec<GridCell>>, row: usize, col: usize) {
     let mut current_row = row;
     let mut current_col = col;
@@ -166,29 +167,32 @@ fn create_path(grid: &mut Vec<Vec<GridCell>>, row: usize, col: usize) {
     // Randomly choose a direction to move in
     let direction = random_direction();
 
-    // Mark the current cell with the chosen direction
-    mark_with_direction(grid, current_row, current_col, direction);
-
-  
-
     // Get the new cell coordinates based on the direction
-    let (new_row, new_col) = get_adjacent_cell(current_row, current_col, direction);
+    let (new_row, new_col) = get_next_cell(current_row, current_col, direction);
 
     // Check if the new cell is within bounds
-    if is_within_bounds(grid, new_row, new_col) {
+    if is_within_bounds(grid, new_row, new_col) && !is_visited(grid, current_row, current_col) {
+        // Mark the current cell as visited to indicate it belongs to UST
+        mark_visited(grid, current_row, current_col);
+
+        let next_cell = &grid[new_row][new_col];
+
+        // Check if the next cell is either a Tile or already has a direction
+        if matches!(next_cell.cell_type, Cell::Tile) || has_direction(next_cell) {
+            // Mark the current cell with the chosen direction
+            mark_with_direction(grid, current_row, current_col, direction);
+            return;
+        }
+
         // Recursively move to the new cell
         create_path(grid, new_row, new_col);
-
-        // If the adjacent cell is a Tile, mark the current cell as a Tile and stop
-        grid[current_row][current_col].cell_type = Cell::Tile;
-        
-        // Mark the current cell with the chosen direction
         mark_with_direction(grid, current_row, current_col, direction);
-
-        mark_visited(grid, current_row, current_col);
     } else {
         // If the new cell is out of bounds, stop recursion
-        println!("Out of bounds at ({}, {}). Stopping path.", new_row, new_col);
+        println!(
+            "Out of bounds at ({}, {}). Stopping path.",
+            new_row, new_col
+        );
         return;
     }
 }
@@ -207,7 +211,7 @@ fn print_grid(grid: &Vec<Vec<GridCell>>) {
                         Direction::Left => print!("← "),  // Path going left
                         Direction::Right => print!("→ "), // Path going right
                     }
-                },
+                }
             }
         }
         println!(); // Move to the next line after each row
@@ -219,10 +223,10 @@ fn create_room(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-     ///////////creating an 8x8 tile background (centered at window origin), with wall//////////
-    
+    ///////////creating an 8x8 tile background (centered at window origin), with wall//////////
+
     let tile_sheet_handle = asset_server.load("mossTiles.png");
-    let tile_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE),2, 2, None, None);
+    let tile_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 2, 2, None, None);
     let tile_layout_len = tile_layout.textures.len();
     let tile_layout_handle = texture_atlases.add(tile_layout);
 
@@ -242,8 +246,8 @@ fn create_room(
     let mut t = Vec3::new(-x_bound, -y_bound, 0.);
 
     /////////////////// Attempt at Wilson's Algo ///////////////////
-    const GRID_WIDTH: usize = 10; // Width of the grid
-    const GRID_HEIGHT: usize = 10; // Height of the grid
+    const GRID_WIDTH: usize = 4; // Width of the grid
+    const GRID_HEIGHT: usize = 4; // Height of the grid
 
     let mut grid = create_grid(GRID_WIDTH, GRID_HEIGHT);
 
@@ -251,7 +255,7 @@ fn create_room(
     let mut rng = rand::thread_rng();
     let random_row = rng.gen_range(0..GRID_HEIGHT);
     let random_col = rng.gen_range(0..GRID_WIDTH);
-    
+
     // Now we have a randomly selected cell
     let random_cell = &grid[random_row][random_col];
 
@@ -260,33 +264,35 @@ fn create_room(
     grid[random_row][random_col].cell_type = Cell::Tile; // Mark it as a Tile
 
     // Now that the cell is marked, we can access it immutably
-     println!("First randomly selected and marked cell at ({}, {}): {:?}", random_row, random_col, grid[random_row][random_col]);
+    println!(
+        "First randomly selected and marked cell at ({}, {}): {:?}",
+        random_row, random_col, grid[random_row][random_col]
+    );
 
     // Continue finding and visiting random unvisited cells until all cells are visited
     while let Some((row, col)) = get_random_unvisited_cell(&grid) {
         println!("Randomly selected new unvisited cell at ({}, {})", row, col);
 
-        let cell = &grid[row][col];  // Access the cell in the grid
-        if let Cell::Tile = cell.cell_type {    // Skip cells part of UST (Tile)
+        let cell = &grid[row][col]; // Access the cell in the grid
+        if let Cell::Tile = cell.cell_type {
+            // Skip cells part of UST (Tile)
             println!("The selected cell is a Tile at ({}, {})", row, col);
             continue;
-        }  else {
-
+        } else {
             if is_within_bounds(&mut grid, row, col) {
                 // Only execute this block if the cell is a Wall
                 println!("The selected cell is a Wall at ({}, {})", row, col);
 
                 // Call `create_path` to explore from this unvisited cell
                 create_path(&mut grid, row, col);
-            }      
+            }
         }
     }
 
-    
-     //while 10 rows are not filled, apply a tile to each column in a row
-     while (y as f32) < (9 as f32) {
-         //if current row is filled, move to next row up
-         if i == 10 {
+    //while 10 rows are not filled, apply a tile to each column in a row
+    while (y as f32) < (9 as f32) {
+        //if current row is filled, move to next row up
+        if i == 10 {
             t += Vec3::new(-10.0 * TILE_SIZE as f32, TILE_SIZE as f32, 0.); // Changing the transform value
             i = 0;
             y += 1;
@@ -294,8 +300,8 @@ fn create_room(
 
         // while a row has less than 10 tiles, keep adding
         while (i as f32) * (TILE_SIZE as f32) < 10.0 * TILE_SIZE as f32 {
-             //determine if this tile should be a wall
-             let is_wall = y == 0 || y == 9 || i == 0 || (i == 9 && y != 4 && y != 5); // opening in the right wall at y == 4 and y == 5
+            //determine if this tile should be a wall
+            let is_wall = y == 0 || y == 9 || i == 0 || (i == 9 && y != 4 && y != 5); // opening in the right wall at y == 4 and y == 5
 
             if is_wall {
                 // add wall tile
@@ -342,9 +348,7 @@ fn create_room(
             t += Vec3::new(TILE_SIZE as f32, 0., 0.);
         }
     }
-   
 
-  
     // Print the grid for debugging
     print_grid(&grid);
 }
