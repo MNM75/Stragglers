@@ -97,6 +97,8 @@ impl Plugin for PlayerPlugin{
         pub magic: u32,
         pub agility: u32,
         pub health: u32,
+
+        pub next_action_tick: u32,
     }
 
     impl PlayerStats {
@@ -115,6 +117,7 @@ impl Plugin for PlayerPlugin{
                 magic: 1,
                 agility: 1,
                 health: 1,
+                next_action_tick: 0,
             }
         }
 

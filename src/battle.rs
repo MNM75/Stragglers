@@ -4,7 +4,7 @@ use crate::GameState;
 
 use crate::player::PlayerStats;
 use crate::enemy::EnemyStats;
-
+use crate::turn_order::TurnOrder;
 
 use crate::player::Player;
 use crate::enemy::Enemy;
@@ -21,15 +21,6 @@ impl Plugin for BattlePlugin{
     }
 }
 
-// turn tracker function goes here
-/*
-fn turn_tracker(
-    // get game state
-    // get turn state
-) {
-}
-*/
-
 fn battle_input(
     /* for input */
     state: Res<State<GameState>>,
@@ -39,15 +30,22 @@ fn battle_input(
     mut player_stat_query: Query<&mut PlayerStats, With<Player>>,
     mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
 
-    // later: get the turn state
-
-    /* for enemy despawn */
+    //use TurnOrder to ensure it is player's turn
     commands: Commands,
     enemy_query: Query<(Entity, &Transform), With<Enemy>>,
     player_query: Query<&Transform, With<Player>>,
     
 ) {
-    // later: check it's the player's turn
+    // The turn system will be integrated here: Before checking for player input, 
+    // we will check if it’s the player's turn to act.
+    // TurnOrder will hold the order of turns (whether it's the player’s or enemy's turn).
+
+    // Check if it's the player's turn using TurnOrder
+    // If it's the player's turn, they can perform actions (attacks, healing, etc.)
+    // Example of TurnOrder check (pseudo-code):
+    // if turn_order.current_turn == player_entity {
+    //     // Allow player to act
+    // }
 
         if input.just_pressed(KeyCode::Digit1) { //later on we can just if the different attacks there are and query player stats.
             if let Ok(mut enemy_stats) = enemy_stat_query.get_single_mut() {
@@ -116,8 +114,8 @@ fn battle_input(
         } else if input.just_pressed(KeyCode::Digit5){
             enemy_attack(player_stat_query, enemy_stat_query);
         }
-
-     
+    // After the player's input is processed, the next step would be to move the turn order forward
+    // turn_order.next_turn();
     }
         
 
@@ -138,6 +136,7 @@ fn enemy_attack(
     mut player_stat_query: Query<&mut PlayerStats, With<Player>>,
     mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
 ) {
+    //check if it is enemy's turn with TurnOrder
     // let rand: usize = random();
     // let attack = rand %3; 
     let attack = choose_attack(&mut player_stat_query, &mut enemy_stat_query);
