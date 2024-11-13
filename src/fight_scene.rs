@@ -22,6 +22,9 @@ struct FightSprites;
 #[derive(Component)]
 struct PlayerSprite;
 
+#[derive(Component)]
+struct MagicSprite;
+
 
 
 #[derive(Component)]
@@ -67,7 +70,8 @@ impl Plugin for FightScenePlugin {
         app.add_systems(OnEnter(GameState::BattleMode), show_battle_ui);
         app.add_systems(OnExit(GameState::BattleMode), hide_battle_ui);
         app.add_systems(Update, execute_animations); 
-        app.add_systems(Update, trigger_animation::<PlayerSprite>.run_if(input_just_pressed(KeyCode::Digit1)));       
+        app.add_systems(Update, (trigger_animation::<PlayerSprite>.run_if(input_just_pressed(KeyCode::Digit1))));
+        app.add_systems(Update, (trigger_animation::<MagicSprite>.run_if(input_just_pressed(KeyCode::Digit2))));
         app.add_systems(Update, init_upon_collision);
         app.add_systems(Update, update_enemy_health_bar);
     }
@@ -147,6 +151,11 @@ fn setup_battle_ui(
     let Lsword_layout_handle = texture_atlases.add(LSword_layout);
     let animation_config_1 = AnimationConfig::new(1, 7, 24);
 
+    let magic_texture_handle = asset_server.load("magic_animation.png");
+    let magic_layout = TextureAtlasLayout::from_grid(UVec2::new(216, 202), 8, 1, None, None);
+    let magic_layout_handle = texture_atlases.add(magic_layout);
+    let animation_config_2 = AnimationConfig::new(0, 7, 24);
+
     let enemy_texture_handle = asset_server.load("enemyPlaceHolder.png");
     let healthbar_background_handle = asset_server.load("healthbarBackground.png");
     let healthbar_handle = asset_server.load("healthbar.png");
@@ -171,7 +180,7 @@ fn setup_battle_ui(
     commands.spawn((
         SpriteBundle {
             transform: Transform::from_scale(Vec3::splat(2.5))
-                .with_translation(Vec3::new(-400.0, -100.0, 1.0)),
+                .with_translation(Vec3::new(-400.0, -100.0, 0.9)),
             texture: player_texture_handle.clone(),
             ..default()
         },
@@ -185,13 +194,31 @@ fn setup_battle_ui(
         FightSprites,
         FightScene
     ));
+    //magic sprite
+    commands.spawn((
+        SpriteBundle {
+            transform: Transform::from_scale(Vec3::splat(2.5))
+                .with_translation(Vec3::new(-400.0, -100.0, 1.0)),
+            texture: magic_texture_handle.clone(),
+            ..default()
+        },
+        TextureAtlas {
+            layout: magic_layout_handle.clone(),
+            index: animation_config_2.first_sprite_index,
+        },
+        
+        MagicSprite,
+        animation_config_2,
+        FightSprites,
+        FightScene
+    ));
 
     // enemy sprite
     commands.spawn((
         SpriteBundle {
             texture: enemy_texture_handle,
             transform: Transform {
-                translation: Vec3::new(400., -100., 1.), // position enemy sprite
+                translation: Vec3::new(400., -100., 0.8), // position enemy sprite
                 scale: Vec3::new(2.5, 2.5, 2.5),        // adjust enemy sprite size
                 ..default()
             },
@@ -322,14 +349,15 @@ fn update_enemy_health_bar(
 fn show_battle_ui(
     mut commands: Commands,
     query: Query<Entity, With<FightScene>>,
-    mut background: Query<&mut Transform, (With<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
-    mut player_sp: Query<&mut Transform, (With<PlayerSprite>, Without<BattleBackground>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
-    mut enemy_sp: Query<&mut Transform, (With<EnemySprite>, Without<BattleBackground>, Without<PlayerSprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
-    mut player_hb: Query<&mut Transform, (With<PlayerHealthBar>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
-    mut player_hbb: Query<&mut Transform, (With<PlayerHealthBarBackground>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
-    mut enemy_hb: Query<&mut Transform, (With<EnemyHealthBar>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBarBackground>)>,
-    mut enemy_hbb: Query<&mut Transform, (With<EnemyHealthBarBackground>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>)>,
-    player: Query<&Transform, (With<Player>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
+    mut background: Query<&mut Transform, (With<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>, Without<MagicSprite>)>,
+    mut player_sp: Query<&mut Transform, (With<PlayerSprite>, Without<BattleBackground>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>, Without<MagicSprite>)>,
+    mut magic_sp: Query<&mut Transform, (With<MagicSprite>, Without<BattleBackground>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>, Without<PlayerSprite>)>,
+    mut enemy_sp: Query<&mut Transform, (With<EnemySprite>, Without<BattleBackground>, Without<PlayerSprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>, Without<MagicSprite>)>,
+    mut player_hb: Query<&mut Transform, (With<PlayerHealthBar>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>, Without<MagicSprite>)>,
+    mut player_hbb: Query<&mut Transform, (With<PlayerHealthBarBackground>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>, Without<MagicSprite>)>,
+    mut enemy_hb: Query<&mut Transform, (With<EnemyHealthBar>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBarBackground>, Without<MagicSprite>)>,
+    mut enemy_hbb: Query<&mut Transform, (With<EnemyHealthBarBackground>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<MagicSprite>)>,
+    player: Query<&Transform, (With<Player>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>, Without<MagicSprite>)>,
 ) { 
 
     for entity in query.iter() {
@@ -344,17 +372,23 @@ fn show_battle_ui(
 
     bg.translation.x = pt.translation.x.clamp(-x_bound, x_bound);   // same logic as camera/player movement
     bg.translation.y = pt.translation.y.clamp(-y_bound, y_bound);   // same logic as camera/player movement
-    bg.translation.z = pt.translation.z + 1.;
+    bg.translation.z = pt.translation.z + 1.0;
 
     let mut ps = player_sp.single_mut();
 
-    ps.translation.x = pt.translation.x.clamp(-x_bound, x_bound)-400.0;   // same logic as camera/player movement
+    ps.translation.x = pt.translation.x.clamp(-x_bound, x_bound)-200.0;   // same logic as camera/player movement
     ps.translation.y = pt.translation.y.clamp(-y_bound, y_bound)-100.0;   // same logic as camera/player movement
-    ps.translation.z = pt.translation.z + 1.1;
+    ps.translation.z = pt.translation.z + 1.2;
+
+    let mut ms = magic_sp.single_mut();
+
+    ms.translation.x = pt.translation.x.clamp(-x_bound, x_bound)-200.0;   // same logic as camera/player movement
+    ms.translation.y = pt.translation.y.clamp(-y_bound, y_bound)-100.0;   // same logic as camera/player movement
+    ms.translation.z = pt.translation.z + 1.3;
 
     let mut es = enemy_sp.single_mut();
 
-    es.translation.x = pt.translation.x.clamp(-x_bound, x_bound)+400.0;   // same logic as camera/player movement
+    es.translation.x = pt.translation.x.clamp(-x_bound, x_bound)+200.0;   // same logic as camera/player movement
     es.translation.y = pt.translation.y.clamp(-y_bound, y_bound)-100.0;   // same logic as camera/player movement
     es.translation.z = pt.translation.z + 1.1;
 
