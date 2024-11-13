@@ -10,9 +10,11 @@ mod events;
 mod battle;
 mod end_credits;
 mod attack;
+mod turn_order;
 
 use map::MapPlugin;
 use player::PlayerPlugin;
+use turn_order::TurnOrder;
 use crate::skill_tree::SkillTreePlugin;
 use text_box::TextboxPlugin;
 use fight_scene::FightScenePlugin;

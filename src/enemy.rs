@@ -24,6 +24,7 @@ pub struct EnemyStats {
     pub max_hp: u32,
     pub hp: u32,
     pub etype: u32,
+    pub next_action_tick: u32,
 }
 
 impl EnemyStats {
@@ -37,6 +38,7 @@ impl EnemyStats {
             max_hp: 10,
             hp: 10,
             etype,
+            next_action_tick: 0,
         }
     }
     pub fn sprite_path(&self) -> &'static str {
