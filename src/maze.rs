@@ -52,6 +52,7 @@ impl Plugin for MazePlugin {
     }
 }
 
+/// Wilson's Algorithm Functions ///
 fn create_grid(rows: usize, cols: usize) -> Vec<Vec<GridCell>> {
     let mut grid = Vec::with_capacity(rows);
 
@@ -209,28 +210,16 @@ fn print_grid(grid: &Vec<Vec<GridCell>>) {
     }
 }
 
-const GRID_WIDTH: usize = 9; // Width of the grid
-const GRID_HEIGHT: usize = 9; // Height of the grid
+////////////
+
+const GRID_WIDTH: usize = 4; // Width of the grid
+const GRID_HEIGHT: usize = 4; // Height of the grid
 
 fn create_room(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    ///////////creating an 8x8 tile background (centered at window origin), with wall//////////
-    /*
-       let tile_sheet_handle = asset_server.load("mossTiles.png");
-       let tile_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 2, 2, None, None);
-       let tile_layout_len = tile_layout.textures.len();
-       let tile_layout_handle = texture_atlases.add(tile_layout);
-
-       let wall_sheet_handle = asset_server.load("wall.png");
-       let wall_layout = TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE), 1, 1, None, None);
-       let wall_layout_len = wall_layout.textures.len();
-       let wall_layout_handle = texture_atlases.add(wall_layout);
-
-       commands.spawn((Camera2dBundle::default(),));
-    */
     //starting point is x = -5 tiles, y = -5 tiles (to create an 8x8 room with an additional 1 tile wall)
     let x_bound = (5. * TILE_SIZE as f32) - (TILE_SIZE as f32) / 2.;
     let y_bound = (5. * TILE_SIZE as f32) - (TILE_SIZE as f32) / 2.;
@@ -280,74 +269,12 @@ fn create_room(
             }
         }
     }
-    ///////////////////////////////////////////////////////////////////////
-
-    /*
-       //while 10 rows are not filled, apply a tile to each column in a row
-       while (y as f32) < (9 as f32) {
-           //if current row is filled, move to next row up
-           if i == 10 {
-               t += Vec3::new(-10.0 * TILE_SIZE as f32, TILE_SIZE as f32, 0.); // Changing the transform value
-               i = 0;
-               y += 1;
-           }
-
-           // while a row has less than 10 tiles, keep adding
-           while (i as f32) * (TILE_SIZE as f32) < 10.0 * TILE_SIZE as f32 {
-               //determine if this tile should be a wall
-               let is_wall = y == 0 || y == 9 || i == 0 || (i == 9 && y != 4 && y != 5); // opening in the right wall at y == 4 and y == 5
-
-               if is_wall {
-                   // add wall tile
-                   commands
-                       .spawn((
-                           SpriteBundle {
-                               texture: wall_sheet_handle.clone(),
-                               transform: Transform {
-                                   translation: t,
-                                   ..default()
-                               },
-                               ..default()
-                           },
-                           TextureAtlas {
-                               index: i % wall_layout_len,
-                               layout: wall_layout_handle.clone(),
-                           },
-                           Wall,
-                       ))
-                       .insert(Background);
-               } else {
-                   // add regular tile
-                   let rand: usize = random();
-                   commands
-                       .spawn((
-                           SpriteBundle {
-                               texture: tile_sheet_handle.clone(),
-                               transform: Transform {
-                                   translation: t,
-                                   ..default()
-                               },
-                               ..default()
-                           },
-                           TextureAtlas {
-                               index: rand % tile_layout_len,
-                               layout: tile_layout_handle.clone(),
-                           },
-                           Tile,
-                       ))
-                       .insert(Background);
-               }
-
-               i += 1;
-               t += Vec3::new(TILE_SIZE as f32, 0., 0.);
-           }
-       }
-    */
-    // Print the grid for debugging
     print_grid(&grid);
 
-    // Call spawn_maze with the generated grid
-    spawn_maze(&mut commands, &asset_server, &mut texture_atlases, &grid);
+    let actual_grid = blueprint_to_grid(&mut commands, &asset_server, &mut texture_atlases, &grid);
+    print_grid(&actual_grid);
+    
+    spawn_maze(&mut commands, &asset_server, &mut texture_atlases, &actual_grid);
 }
 
 // function that takes maze blueprint as input and returns a spawned maze as output
@@ -429,4 +356,53 @@ fn spawn_maze(
             0.,
         );
     }
+}
+
+// takes correct maze paths blueprint and returns a maze grid (arrows to walls and tiles)
+fn blueprint_to_grid(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
+    grid: &Vec<Vec<GridCell>>,
+) -> Vec<Vec<GridCell>> {
+    // expand each GridCell into a 3x3 block in the 'actual' grid
+    let rows = grid.len();
+    let cols = grid[0].len();
+
+    // formula is 2x + 1 since the 3x3 "blocks" should overlap
+    let row_actual = rows * 2 + 1;
+    let cols_actual = cols * 2 + 1;
+
+    let mut grid_actual = create_grid(row_actual, cols_actual);
+
+    for (r, row) in grid.iter().enumerate() {
+        for (c, cell) in row.iter().enumerate() {
+            // match cell to cell in actual grid
+            let r_actual = r * 2 + 1;
+            let c_actual = c * 2 + 1;
+
+            match &cell.cell_type {
+                Cell::Path(direction) => {
+                    // open cell in actual grid
+                    grid_actual[r_actual][c_actual] = GridCell::new(Cell::Tile);
+
+                    // other cells in the 3x3 are opened based on direction
+                    // the cell the path points towards should be an open tile
+
+                    match direction {
+                        Direction::Up => grid_actual[r_actual - 1][c_actual] = GridCell::new(Cell::Tile),    // Path going up
+                        Direction::Down => grid_actual[r_actual + 1][c_actual] = GridCell::new(Cell::Tile),  // Path going down
+                        Direction::Left => grid_actual[r_actual][c_actual - 1] = GridCell::new(Cell::Tile),  // Path going left
+                        Direction::Right => grid_actual[r_actual][c_actual + 1] = GridCell::new(Cell::Tile), // Path going right
+                    }
+                }
+                Cell::Tile => {
+                    // open cell in actual grid
+                    grid_actual[r_actual][c_actual] = GridCell::new(Cell::Tile);
+                }
+                _ => {}
+            }
+        }
+    }
+    grid_actual
 }
