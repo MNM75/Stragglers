@@ -13,6 +13,8 @@ struct SkillTreeUIBackground;
 #[derive(Component)]
 struct SkillTreeUISkeleton;
 #[derive(Component)]
+struct SkillTreeUIDetails;
+#[derive(Component)]
 struct SkillTreeUINode {
     unlocked: bool,
     index: u32,
@@ -83,6 +85,17 @@ fn load_skill_tree_ui(
             SkillTreeUIComponent,
             SpriteBundle {
             texture: asset_server.load("skillTreeSkeleton.png"),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+            }
+        ));
+
+        // skill tree node details
+        commands.spawn((
+            SkillTreeUIDetails,
+            SkillTreeUIComponent,
+            SpriteBundle {
+            texture: asset_server.load("skillTreeDetails.png"),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
             }
@@ -677,10 +690,11 @@ fn load_skill_tree_ui(
 fn show_skill_tree_ui(
     mut commands: Commands,
     query: Query<Entity, With<SkillTreeUIComponent>>,
-    mut skeleton: Query<&mut Transform, (With<SkillTreeUISkeleton>, Without<SkillTreeUIBackground>)>,
-    mut background: Query<&mut Transform, (With<SkillTreeUIBackground>, Without<SkillTreeUISkeleton>)>,
-    mut nodes: Query<&mut Transform, (With<SkillTreeUINode>, Without<SkillTreeUIBackground>, Without<SkillTreeUISkeleton>)>,
-    player: Query<&Transform, (With<Player>, Without<SkillTreeUIBackground>, Without<SkillTreeUISkeleton>, Without<SkillTreeUINode>)>,)
+    mut skeleton: Query<&mut Transform, (With<SkillTreeUISkeleton>, Without<SkillTreeUIBackground>, Without<SkillTreeUIDetails>)>,
+    mut details: Query<&mut Transform, (With<SkillTreeUIDetails>, Without<SkillTreeUIBackground>, Without<SkillTreeUISkeleton>)>,
+    mut background: Query<&mut Transform, (With<SkillTreeUIBackground>, Without<SkillTreeUISkeleton>, Without<SkillTreeUIDetails>)>,
+    mut nodes: Query<&mut Transform, (With<SkillTreeUINode>, Without<SkillTreeUIBackground>, Without<SkillTreeUISkeleton>, Without<SkillTreeUIDetails>)>,
+    player: Query<&Transform, (With<Player>, Without<SkillTreeUIBackground>, Without<SkillTreeUISkeleton>, Without<SkillTreeUINode>, Without<SkillTreeUIDetails>)>,)
     // an &Transform with <...> would not have <SkillTreeUI...> applied by user logic, but the Without<T> is included to not cause a panic and crash the game
 {
     // makes the skill tree UI visible
@@ -699,6 +713,7 @@ fn show_skill_tree_ui(
 
     let mut bt = background.single_mut();
     let mut st = skeleton.single_mut();
+    let mut dt = details.single_mut();
 
     bt.translation.x = x_player;
     bt.translation.y = y_player;
@@ -707,6 +722,10 @@ fn show_skill_tree_ui(
     st.translation.x = x_player + 120.;
     st.translation.y = y_player;
     st.translation.z = bt.translation.z + 1.;
+
+    dt.translation.x = x_player + 120.;
+    dt.translation.y = y_player;
+    dt.translation.z = st.translation.z + 2.;
 
     // loads the nodes...
     let mut i = 0;
