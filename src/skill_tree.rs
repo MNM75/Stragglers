@@ -808,6 +808,7 @@ fn toggle_skill_tree_ui(
                 GameState::SkillTreeMenu => next_state.set(GameState::InGame),
                 GameState::BattleMode => next_state.set(GameState::BattleMode),
                 GameState::EndCredits => next_state.set(GameState::EndCredits),
+                GameState::DefeatScreen => next_state.set(GameState::DefeatScreen),
             }
         }
 }

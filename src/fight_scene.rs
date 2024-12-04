@@ -70,8 +70,8 @@ impl Plugin for FightScenePlugin {
         app.add_systems(OnEnter(GameState::BattleMode), show_battle_ui);
         app.add_systems(OnExit(GameState::BattleMode), hide_battle_ui);
         app.add_systems(Update, execute_animations); 
-        app.add_systems(Update, (trigger_animation::<PlayerSprite>.run_if(input_just_pressed(KeyCode::Digit1))));
-        app.add_systems(Update, (trigger_animation::<MagicSprite>.run_if(input_just_pressed(KeyCode::Digit2))));
+        app.add_systems(Update, trigger_animation::<PlayerSprite>.run_if(input_just_pressed(KeyCode::Digit1)));
+        app.add_systems(Update, trigger_animation::<MagicSprite>.run_if(input_just_pressed(KeyCode::Digit2)));
         app.add_systems(Update, init_upon_collision);
         app.add_systems(Update, update_enemy_health_bar);
     }
@@ -131,6 +131,7 @@ fn init_upon_collision(
             GameState::BattleMode => next_state.set(GameState::BattleMode),
             GameState::SkillTreeMenu => next_state.set(GameState::BattleMode),
             GameState::EndCredits => next_state.set(GameState::EndCredits),
+            GameState::DefeatScreen => next_state.set(GameState::DefeatScreen),
         }
     }
 }

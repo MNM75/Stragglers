@@ -35,8 +35,8 @@ impl EnemyStats {
             mgkatk: 1,
             mgkdef: 1,
             speed: 1,
-            max_hp: 10,
-            hp: 10,
+            max_hp: 25,
+            hp: 25,
             etype,
             next_action_tick: 0,
         }
