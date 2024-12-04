@@ -32,7 +32,8 @@ enum Direction {
 struct GridCell {
     cell_type: Cell,
     marked: bool,
-    direction: Option<Direction>,  // New field to store direction for Tiles
+    direction: Option<Di
+    rection>,  // New field to store direction for Tiles
 }
 
 impl GridCell {
@@ -150,6 +151,7 @@ fn random_direction() -> Direction {
 fn is_within_bounds(grid: &Vec<Vec<GridCell>>, row: usize, col: usize) -> bool {
     row < grid.len() && col < grid[row].len()
 }
+
 fn create_path(grid: &mut Vec<Vec<GridCell>>, row: usize, col: usize) {
     let mut current_row = row;
     let mut current_col = col;
@@ -206,6 +208,9 @@ fn print_grid(grid: &Vec<Vec<GridCell>>) {
     }
 }
 
+const GRID_WIDTH: usize = 9; // Width of the grid
+const GRID_HEIGHT: usize = 9; // Height of the grid
+
 fn create_room(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -234,9 +239,7 @@ fn create_room(
     let mut t = Vec3::new(-x_bound, -y_bound, 0.);
 
     /////////////////// Attempt at Wilson's Algo ///////////////////
-    const GRID_WIDTH: usize = 7; // Width of the grid
-    const GRID_HEIGHT: usize = 7; // Height of the grid
-
+  
     let mut grid = create_grid(GRID_WIDTH, GRID_HEIGHT);
 
     // Randomly select a cell
@@ -274,7 +277,19 @@ fn create_room(
         }
     }
 
-    
+
+    ///////////////// Spawning the maze ///////////////////////
+    const MAZE_WIDTH: usize = GRID_WIDTH+1;
+    const MAZE_HEIGHT: usize = GRID_HEIGHT+1;
+
+    // iterate through the maze grid level by level
+    for row in 0..MAZE_HEIGHT {
+        for col in 0..MAZE_WIDTH {
+          
+        }
+    }
+
+    /* 
      //while 10 rows are not filled, apply a tile to each column in a row
      while (y as f32) < (9 as f32) {
          //if current row is filled, move to next row up
@@ -334,8 +349,8 @@ fn create_room(
             t += Vec3::new(TILE_SIZE as f32, 0., 0.);
         }
     }
-   
 
+ */
   
     // Print the grid for debugging
     print_grid(&grid);
