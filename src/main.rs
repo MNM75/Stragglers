@@ -11,6 +11,7 @@ mod battle;
 mod end_credits;
 mod attack;
 mod turn_order;
+mod defeat;
 
 use map::MapPlugin;
 use player::PlayerPlugin;
@@ -23,6 +24,7 @@ use events::EnemyCollisionEvent;
 use events::EndGameEvent;
 use battle::BattlePlugin;
 use end_credits::EndCreditsPlugin;
+use defeat::DefeatScreenPlugin; 
 
 const TITLE: &str = "main";
 const WIN_W: f32 = 1280.;
@@ -36,6 +38,7 @@ enum GameState {
     SkillTreeMenu,
     BattleMode,
     EndCredits,
+    DefeatScreen,
 }
 
 #[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
@@ -86,6 +89,7 @@ fn main() {
         .add_event::<EndGameEvent>()
         .add_plugins(TextboxPlugin)
         .add_plugins(EndCreditsPlugin)
+        .add_plugins(DefeatScreenPlugin)
         /*
             add other plugins here
         */

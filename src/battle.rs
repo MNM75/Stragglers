@@ -51,6 +51,11 @@ fn battle_input(
     // if turn_order.current_turn == player_entity {
     //     // Allow player to act
     // }
+        if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
+            if (player_stats.hp<=0){
+                next_state.set(GameState::DefeatScreen);
+            }
+        }
 
         if input.just_pressed(KeyCode::Digit1) { //later on we can just if the different attacks there are and query player stats.
             if let Ok(mut enemy_stats) = enemy_stat_query.get_single_mut() {
@@ -127,6 +132,7 @@ fn battle_input(
                 GameState::InGame => next_state.set(GameState::InGame),
                 GameState::SkillTreeMenu => next_state.set(GameState::SkillTreeMenu), // no op?
                 GameState::EndCredits => next_state.set(GameState::EndCredits),
+                GameState::DefeatScreen => next_state.set(GameState::DefeatScreen),
             }
             despawn_closest_enemy(commands, enemy_query, player_query);
         /* else do nothing until player selects a valid battle option */
@@ -232,8 +238,8 @@ fn magic_attack(base_damage: u32,magic_attack: u32, magic_defense: u32) -> u32{
 
     //defend
     let num = rand::thread_rng().gen_range(0..100);
-    let magic_contest = 20;//(((magic_attack-magic_defense+10) as f64)*5.0+25.0) as u32;    //<------------THIS line keeps crashing randomly when an input is pressed
-                                                                                                 //-------------I'm not sure why it does that so for now I've just set it to 20 
+    let magic_contest =((((magic_attack as f64)-(magic_defense as f64)+10.0))*5.0+25.0) as u32; 
+
     if(num<magic_contest){
         final_dmg = ((base_damage as f64)*(1.0+(magic_attack as f64)/10.0)) as u32;
     }
