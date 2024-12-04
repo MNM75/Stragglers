@@ -1,10 +1,12 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 use crate::GameState;
+use crate::BattleState;
 
 use crate::player::PlayerStats;
 use crate::enemy::EnemyStats;
 use crate::turn_order::TurnOrder;
+use crate::text_box::BattleDialogue;
 
 use crate::player::Player;
 use crate::enemy::Enemy;
@@ -15,9 +17,11 @@ use crate::attack::choose_attack;
 pub struct BattlePlugin;
 
 
+
 impl Plugin for BattlePlugin{
     fn build(&self, app: &mut App){
         app.add_systems(Update, battle_input.run_if(in_state(GameState::BattleMode)));
+        app.add_systems(Update, enemy_attack.run_if(in_state(BattleState::EnemyTurn)));
     }
 }
 
@@ -25,11 +29,12 @@ fn battle_input(
     /* for input */
     state: Res<State<GameState>>,
     mut next_state: ResMut<NextState<GameState>>,
+    mut next_turn_state: ResMut<NextState<BattleState>>,
     input: Res<ButtonInput<KeyCode>>,
 
     mut player_stat_query: Query<&mut PlayerStats, With<Player>>,
     mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
-
+    mut battle_dialogue_query: Query<&mut BattleDialogue>,
     //use TurnOrder to ensure it is player's turn
     commands: Commands,
     enemy_query: Query<(Entity, &Transform), With<Enemy>>,
@@ -55,6 +60,7 @@ fn battle_input(
                     let attack_dmg = physical_attack(5, player_stats.atk, enemy_stats.physdef);//why is attack using eenemy magic attack?
                     enemy_stats.hp = enemy_stats.hp.saturating_sub(attack_dmg);
                     
+                    insert_battledialogue(battle_dialogue_query, format!("Enemy was attacked for {attack_dmg} damage!"));
                     info!("Enemy was attacked with sword for {} damage! Enemy HP is now: {}", attack_dmg, enemy_stats.hp);
 
                     if enemy_stats.hp <= 0 {
@@ -64,7 +70,8 @@ fn battle_input(
                         next_state.set(GameState::InGame);
 
                     } else {
-                        enemy_attack(player_stat_query, enemy_stat_query);
+                        next_turn_state.set(BattleState::EnemyTurn);
+                        //enemy_attack(player_stat_query, enemy_stat_query);
                     }
                 }
             }
@@ -79,6 +86,7 @@ fn battle_input(
                     let attack_dmg = magic_attack(5, player_stats.matk, enemy_stats.mgkdef);
                     enemy_stats.hp = enemy_stats.hp.saturating_sub(attack_dmg);
                     
+                    insert_battledialogue(battle_dialogue_query, format!("Enemy was attacked with magic for {attack_dmg} damage!"));
                     info!("Enemy was attacked with magic for {} damage! Enemy HP is now: {}", attack_dmg, enemy_stats.hp);
 
                     if enemy_stats.hp <= 0 {
@@ -87,16 +95,27 @@ fn battle_input(
                         next_state.set(GameState::InGame);
 
                     } else {
-                        enemy_attack(player_stat_query, enemy_stat_query);
+                        next_turn_state.set(BattleState::EnemyTurn);
+                        //enemy_attack(player_stat_query, enemy_stat_query);
                     }
                 }
             }
            
         }
         else if input.just_pressed(KeyCode::Digit3) {
-            battle_heal(player_stat_query);
+            //battle_heal(player_stat_query);
+            if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
+                let current_hp = player_stats.hp;
+                let max_hp = player_stats.max_hp;
+                let heal_amt = heal(4, player_stats.magic); // get the heal amount (just a flat 5 hp for now)
+                player_stats.hp = current_hp + heal_amt.clamp(0, max_hp - current_hp);
+                insert_battledialogue(battle_dialogue_query, format!("Player healed for {heal_amt} hp!"));
+                //info!("Player healed! Player hp is now: {}", player_stats.hp);d
+            }
             info!("press 5 to end turn");
             // later: change turn state here
+            //next_turn_state.set(BattleState::EnemyTurn);
+            
             //enemy_attack(player_stat_query, enemy_stat_query);
 
         }
@@ -112,14 +131,16 @@ fn battle_input(
             despawn_closest_enemy(commands, enemy_query, player_query);
         /* else do nothing until player selects a valid battle option */
         } else if input.just_pressed(KeyCode::Digit5){
-            enemy_attack(player_stat_query, enemy_stat_query);
+            next_turn_state.set(BattleState::EnemyTurn);
+            //enemy_attack(player_stat_query, enemy_stat_query);
         }
     // After the player's input is processed, the next step would be to move the turn order forward
     // turn_order.next_turn();
+
     }
         
 
-
+//moved function to enemy_attack to make it easier for insert_battledialogue to be called
 fn battle_heal(
     mut player_stat_query: Query<&mut PlayerStats, With<Player>>,
 ) {
@@ -128,13 +149,17 @@ fn battle_heal(
         let max_hp = player_stats.max_hp;
         let heal_amt = heal(4, player_stats.magic); // get the heal amount (just a flat 5 hp for now)
         player_stats.hp = current_hp + heal_amt.clamp(0, max_hp - current_hp);
-        info!("Player healed! Player hp is now: {}", player_stats.hp);
+        //insert_battledialogue(battle_dialogue_query, format!("Player healed for {heal_amt} hp"));
+        //info!("Player healed! Player hp is now: {}", player_stats.hp);d
     }
+
 }
 
 fn enemy_attack(
     mut player_stat_query: Query<&mut PlayerStats, With<Player>>,
     mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
+    mut battle_dialogue_query: Query<&mut BattleDialogue>,
+    mut next_turn_state: ResMut<NextState<BattleState>>,
 ) {
     //check if it is enemy's turn with TurnOrder
     // let rand: usize = random();
@@ -147,21 +172,36 @@ fn enemy_attack(
             if (attack == 0){
                 enemy_damage = physical_attack(5, enemy_stats.physatk, player_stats.def);
                 player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
+
+                insert_battledialogue(battle_dialogue_query, format!("Enemy attacked you for {enemy_damage} damage!"));
                 info!("Enemy hit you for {} damage! Player HP is now: {}",enemy_damage, player_stats.hp);
             } else if (attack == 1){
                 enemy_damage = magic_attack(5, enemy_stats.mgkatk, player_stats.mdef);
                 player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
+
+                insert_battledialogue(battle_dialogue_query, format!("Enemy attacked you with a psychic force for {enemy_damage} damage!"));
                 info!("Enemy hit you with a psychic force for {} damage! Player HP is now: {}",enemy_damage, player_stats.hp);
             } else if (attack == 2){
-                enemy_heal(enemy_stat_query);
+                //enemy_heal(enemy_stat_query);
+                if let Ok(mut enemy_stats) = enemy_stat_query.get_single_mut() {
+                    let current_hp = enemy_stats.hp;
+                    let max_hp = enemy_stats.max_hp;
+                    let heal_amt = heal(4, enemy_stats.mgkatk); // get the heal amount (just a flat 5 hp for now)
+                    enemy_stats.hp = current_hp + heal_amt.clamp(0, max_hp - current_hp);
+                    
+                    insert_battledialogue(battle_dialogue_query, format!("Enemy healed for {heal_amt} hp!"));
+                    info!("Enemy healed! Enemy hp is now: {}", enemy_stats.hp);
+                }
                 player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
                 
             }
         }       
         
     }
+    next_turn_state.set(BattleState::PlayerTurn);
 }
 
+//moved function to enemy_attack to make it easier for insert_battledialogue to be called
 fn enemy_heal(
     mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
 ) {
@@ -192,8 +232,8 @@ fn magic_attack(base_damage: u32,magic_attack: u32, magic_defense: u32) -> u32{
 
     //defend
     let num = rand::thread_rng().gen_range(0..100);
-    let magic_contest =(((magic_attack-magic_defense+10) as f64)*5.0+25.0) as u32; 
-
+    let magic_contest = 20;//(((magic_attack-magic_defense+10) as f64)*5.0+25.0) as u32;    //<------------THIS line keeps crashing randomly when an input is pressed
+                                                                                                 //-------------I'm not sure why it does that so for now I've just set it to 20 
     if(num<magic_contest){
         final_dmg = ((base_damage as f64)*(1.0+(magic_attack as f64)/10.0)) as u32;
     }
@@ -205,4 +245,15 @@ fn heal(base_heal: u32,magic_attack: u32) -> u32{
     let final_heal: u32 = ((base_heal as f64)*(1.0+((magic_attack as f64)/10.0)))as u32;
 
     return final_heal;
+}
+
+
+fn insert_battledialogue(
+        mut battle_dialogue_query: Query<&mut BattleDialogue>,
+        text: String
+){
+    
+    for(mut battle_dialogue) in &mut battle_dialogue_query{
+        battle_dialogue.change(text.clone());
+    }
 }

@@ -53,6 +53,13 @@ enum MenuState {
     Text,
 }
 
+#[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
+enum BattleState {
+    #[default]
+    PlayerTurn,
+    EnemyTurn,
+}
+
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::Srgba(Srgba::gray(0.25))))
@@ -68,6 +75,7 @@ fn main() {
         .init_state::<TextState>()
         .init_state::<GameState>()
         .init_state::<MenuState>()
+        .init_state::<BattleState>()
         .add_plugins(MapPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(SkillTreePlugin)
