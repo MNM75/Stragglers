@@ -128,6 +128,7 @@ fn battle_input(
             info!("ran away");
             /* change game state to over world */
             match state.get() {
+                GameState::Welcome => next_state.set(GameState::InGame),
                 GameState::BattleMode => next_state.set(GameState::InGame),
                 GameState::InGame => next_state.set(GameState::InGame),
                 GameState::SkillTreeMenu => next_state.set(GameState::SkillTreeMenu), // no op?

@@ -12,8 +12,10 @@ mod end_credits;
 mod attack;
 mod turn_order;
 mod defeat;
+mod welcome;
 
 use map::MapPlugin;
+use welcome::WelcomePlugin;
 use player::PlayerPlugin;
 use turn_order::TurnOrder;
 use crate::skill_tree::SkillTreePlugin;
@@ -35,6 +37,7 @@ const WIN_H: f32 = 720.;
 enum GameState {
     #[default]
     InGame,
+    Welcome,
     SkillTreeMenu,
     BattleMode,
     EndCredits,
@@ -78,6 +81,7 @@ fn main() {
         .init_state::<TextState>()
         .init_state::<GameState>()
         .init_state::<MenuState>()
+        .add_plugins(WelcomePlugin)
         .init_state::<BattleState>()
         .add_plugins(MapPlugin)
         .add_plugins(PlayerPlugin)
