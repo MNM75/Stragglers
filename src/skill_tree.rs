@@ -804,6 +804,7 @@ fn toggle_skill_tree_ui(
 ) {
         if input.just_pressed(KeyCode::KeyQ) {
             match state.get() {
+                GameState::Welcome => next_state.set(GameState::Welcome),
                 GameState::InGame => next_state.set(GameState::SkillTreeMenu),
                 GameState::SkillTreeMenu => next_state.set(GameState::InGame),
                 GameState::BattleMode => next_state.set(GameState::BattleMode),
