@@ -61,10 +61,10 @@ fn hide_welcome(
         commands.entity(entity).insert(Visibility::Hidden);
     }
     match state.get() {
-        GameState::Welcome=> next_state.set(GameState::InGame),
+        GameState::Welcome=> next_state.set(GameState::SkillTreeMenu),
         GameState::InGame => next_state.set(GameState::InGame),
-        GameState::BattleMode => next_state.set(GameState::InGame),
-        GameState::SkillTreeMenu => next_state.set(GameState::InGame),
+        GameState::BattleMode => next_state.set(GameState::BattleMode),
+        GameState::SkillTreeMenu => next_state.set(GameState::SkillTreeMenu),
         GameState::EndCredits => next_state.set(GameState::EndCredits),
         GameState::DefeatScreen => next_state.set(GameState::DefeatScreen),
     }
