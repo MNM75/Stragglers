@@ -12,6 +12,21 @@ struct Background;
 #[derive(Component)]
 pub struct Wall;
 
+use bevy::prelude::*;
+
+#[derive(Resource)]
+struct MazeGrid {
+    grid: Vec<Vec<GridCell>>,
+}
+
+impl MazeGrid {
+    fn new(rows: usize, cols: usize) -> Self {
+        let grid = create_grid(rows, cols);
+        MazeGrid { grid }
+    }
+}
+
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Cell {
     Wall,
@@ -48,10 +63,10 @@ pub struct MazePlugin;
 
 impl Plugin for MazePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, generate_maze);
+        app.insert_resource(MazeGrid::new(GRID_WIDTH, GRID_HEIGHT)) // Add the grid as a resource
+            .add_systems(Startup, generate_maze);
     }
 }
-
 /// Wilson's Algorithm Functions ///
 fn create_grid(rows: usize, cols: usize) -> Vec<Vec<GridCell>> {
     let mut grid = Vec::with_capacity(rows);
@@ -216,13 +231,14 @@ const GRID_WIDTH: usize = 4; // Width of the grid
 const GRID_HEIGHT: usize = 4; // Height of the grid
 
 fn generate_maze(
+    mut maze_grid: ResMut<MazeGrid>,  
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     /////////////////////  Generate a maze blueprint using Wilson's Algo /////////////////////
 
-    let mut grid = create_grid(GRID_WIDTH, GRID_HEIGHT);
+    let mut grid = &mut maze_grid.grid; // Use the grid from the resource
 
     // Randomly select a cell
     let mut rng = rand::thread_rng();
@@ -261,9 +277,10 @@ fn generate_maze(
     print_grid(&grid);
 
     let actual_grid = blueprint_to_grid(&mut commands, &asset_server, &mut texture_atlases, &grid);
-    print_grid(&actual_grid);
+    let doubled_grid = double_grid(&mut commands, &asset_server, &mut texture_atlases, &actual_grid);
+   // print_grid(&doubled_grid);
     
-    spawn_maze(&mut commands, &asset_server, &mut texture_atlases, &actual_grid);
+    spawn_maze(&mut commands, &asset_server, &mut texture_atlases, &doubled_grid);
 }
 
 // function that takes maze blueprint as input and returns a spawned maze as output
@@ -363,6 +380,7 @@ fn blueprint_to_grid(
     let cols_actual = cols * 2 + 1;
 
     let mut grid_actual = create_grid(row_actual, cols_actual);
+    let mut tile_count = 0;
 
     for (r, row) in grid.iter().enumerate() {
         for (c, cell) in row.iter().enumerate() {
@@ -374,24 +392,80 @@ fn blueprint_to_grid(
                 Cell::Path(direction) => {
                     // open cell in actual grid
                     grid_actual[r_actual][c_actual] = GridCell::new(Cell::Tile);
+                    tile_count += 1;
 
                     // other cells in the 3x3 are opened based on direction
                     // the cell the path points towards should be an open tile
 
                     match direction {
-                        Direction::Up => grid_actual[r_actual - 1][c_actual] = GridCell::new(Cell::Tile),    // Path going up
-                        Direction::Down => grid_actual[r_actual + 1][c_actual] = GridCell::new(Cell::Tile),  // Path going down
-                        Direction::Left => grid_actual[r_actual][c_actual - 1] = GridCell::new(Cell::Tile),  // Path going left
-                        Direction::Right => grid_actual[r_actual][c_actual + 1] = GridCell::new(Cell::Tile), // Path going right
+                        Direction::Up => {
+                            grid_actual[r_actual - 1][c_actual] = GridCell::new(Cell::Tile);
+                            tile_count += 1;
+                        },    // Path going up
+                        Direction::Down => {
+                            grid_actual[r_actual + 1][c_actual] = GridCell::new(Cell::Tile);
+                            tile_count += 1;
+                        },  // Path going down
+                        Direction::Left => {
+                            grid_actual[r_actual][c_actual - 1] = GridCell::new(Cell::Tile);
+                            tile_count += 1;
+                        },  // Path going left
+                        Direction::Right => {
+                            grid_actual[r_actual][c_actual + 1] = GridCell::new(Cell::Tile);
+                            tile_count += 1;
+                        }, // Path going right
                     }
                 }
                 Cell::Tile => {
                     // open cell in actual grid
                     grid_actual[r_actual][c_actual] = GridCell::new(Cell::Tile);
+                    tile_count += 1;
                 }
                 _ => {}
             }
         }
     }
+    grid_actual
+}
+
+// scales hallways to be 2x
+fn double_grid(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
+    grid: &Vec<Vec<GridCell>>,
+) -> Vec<Vec<GridCell>> {
+    // expand each GridCell into a 2x2 block in the scaled-up version
+    let rows = grid.len();
+    let cols = grid[0].len();
+
+    let row_actual = rows * 2;
+    let cols_actual = cols * 2;
+
+    let mut grid_actual = Vec::new();
+
+    for row in grid.iter() {
+        let mut row1 = vec![];
+        let mut row2 = vec![];
+
+        for cell in row {
+            row1.push(cell.clone());
+            row1.push(cell.clone());
+
+            row2.push(cell.clone());
+            row2.push(cell.clone());
+        }
+        grid_actual.push(row1);
+        grid_actual.push(row2);
+    }
+
+    // make exterior walls thinner
+    for row in &mut grid_actual {
+        row.remove(0);
+        row.pop();
+    }
+    grid_actual.remove(0);
+    grid_actual.pop();
+
     grid_actual
 }
