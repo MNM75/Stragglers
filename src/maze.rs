@@ -12,6 +12,21 @@ struct Background;
 #[derive(Component)]
 pub struct Wall;
 
+use bevy::prelude::*;
+
+#[derive(Resource)]
+struct MazeGrid {
+    grid: Vec<Vec<GridCell>>,
+}
+
+impl MazeGrid {
+    fn new(rows: usize, cols: usize) -> Self {
+        let grid = create_grid(rows, cols);
+        MazeGrid { grid }
+    }
+}
+
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Cell {
     Wall,
@@ -48,10 +63,10 @@ pub struct MazePlugin;
 
 impl Plugin for MazePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, create_room);
+        app.insert_resource(MazeGrid::new(GRID_WIDTH, GRID_HEIGHT)) // Add the grid as a resource
+            .add_systems(Startup, generate_maze);
     }
 }
-
 /// Wilson's Algorithm Functions ///
 fn create_grid(rows: usize, cols: usize) -> Vec<Vec<GridCell>> {
     let mut grid = Vec::with_capacity(rows);
@@ -215,30 +230,20 @@ fn print_grid(grid: &Vec<Vec<GridCell>>) {
 const GRID_WIDTH: usize = 4; // Width of the grid
 const GRID_HEIGHT: usize = 4; // Height of the grid
 
-fn create_room(
+fn generate_maze(
+    mut maze_grid: ResMut<MazeGrid>,  
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    //starting point is x = -5 tiles, y = -5 tiles (to create an 8x8 room with an additional 1 tile wall)
-    let x_bound = (5. * TILE_SIZE as f32) - (TILE_SIZE as f32) / 2.;
-    let y_bound = (5. * TILE_SIZE as f32) - (TILE_SIZE as f32) / 2.;
+    /////////////////////  Generate a maze blueprint using Wilson's Algo /////////////////////
 
-    let mut i = 0;
-    let mut y: usize = 0;
-    let mut t = Vec3::new(-x_bound, -y_bound, 0.);
-
-    ///////////////////// Attempt at Wilson's Algo /////////////////////
-
-    let mut grid = create_grid(GRID_WIDTH, GRID_HEIGHT);
+    let mut grid = &mut maze_grid.grid; // Use the grid from the resource
 
     // Randomly select a cell
     let mut rng = rand::thread_rng();
     let random_row = rng.gen_range(0..GRID_HEIGHT);
     let random_col = rng.gen_range(0..GRID_WIDTH);
-
-    // Now we have a randomly selected cell
-    let random_cell = &grid[random_row][random_col];
 
     // Mark the randomly selected cell as visited (mutable borrow)
     add_to_UST(&mut grid, random_row, random_col);
@@ -273,7 +278,7 @@ fn create_room(
 
     let actual_grid = blueprint_to_grid(&mut commands, &asset_server, &mut texture_atlases, &grid);
     let doubled_grid = double_grid(&mut commands, &asset_server, &mut texture_atlases, &actual_grid);
-    print_grid(&doubled_grid);
+   // print_grid(&doubled_grid);
     
     spawn_maze(&mut commands, &asset_server, &mut texture_atlases, &doubled_grid);
 }
