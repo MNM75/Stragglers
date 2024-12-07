@@ -63,7 +63,7 @@ fn create_room(
         // while a row has less than 10 tiles, keep adding
         while (i as f32) * (TILE_SIZE as f32) < 10.0 * TILE_SIZE as f32 {
              //determine if this tile should be a wall
-             let is_wall = y == 0 || y == 9 || i == 0 || (i == 9 && y != 4 && y != 5); // opening in the right wall at y == 4 and y == 5
+            let is_wall = y == 0 || y == 9 || i == 0 || (i == 9 && y != 4 && y != 5); // opening in the right wall at y == 4 and y == 5
 
             if is_wall {
                 // add wall tile
@@ -135,7 +135,7 @@ fn create_room(
         0.0,
     );
 
-    // create the second room
+    //create the second room
     create_second_room(
         &mut commands,
         &asset_server,
@@ -164,7 +164,7 @@ fn create_hallway(
     start_position: Vec3,
 ) -> Vec3 {
     const HALLWAY_ROWS: usize = 4; // ttal rows, including the walls
-    const HALLWAY_COLUMNS: usize = 10; // columns for the hallway
+    const HALLWAY_COLUMNS: usize = 5; // columns for the hallway
     let mut t = start_position;
 
     // load tile texture
