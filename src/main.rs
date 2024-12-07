@@ -12,6 +12,7 @@ mod end_credits;
 mod attack;
 mod turn_order;
 mod defeat;
+mod node;
 
 use map::MapPlugin;
 use player::PlayerPlugin;
@@ -25,6 +26,7 @@ use events::EndGameEvent;
 use battle::BattlePlugin;
 use end_credits::EndCreditsPlugin;
 use defeat::DefeatScreenPlugin; 
+use node::NodePlugin;
 
 const TITLE: &str = "main";
 const WIN_W: f32 = 1280.;
@@ -82,6 +84,7 @@ fn main() {
         .add_plugins(TextboxPlugin)
         .add_plugins(EndCreditsPlugin)
         .add_plugins(DefeatScreenPlugin)
+        .add_plugins(NodePlugin)
         /*
             add other plugins here
         */
