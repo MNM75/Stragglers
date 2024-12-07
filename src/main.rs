@@ -13,8 +13,10 @@ mod attack;
 mod turn_order;
 mod defeat;
 mod node;
+mod welcome;
 
 use map::MapPlugin;
+use welcome::WelcomePlugin;
 use player::PlayerPlugin;
 use turn_order::TurnOrder;
 use crate::skill_tree::SkillTreePlugin;
@@ -37,6 +39,7 @@ const WIN_H: f32 = 720.;
 enum GameState {
     #[default]
     InGame,
+    Welcome,
     SkillTreeMenu,
     BattleMode,
     EndCredits,
@@ -58,6 +61,13 @@ enum MenuState {
     Text,
 }
 
+#[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
+enum BattleState {
+    #[default]
+    PlayerTurn,
+    EnemyTurn,
+}
+
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::Srgba(Srgba::gray(0.25))))
@@ -73,6 +83,8 @@ fn main() {
         .init_state::<TextState>()
         .init_state::<GameState>()
         .init_state::<MenuState>()
+        .add_plugins(WelcomePlugin)
+        .init_state::<BattleState>()
         .add_plugins(MapPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(SkillTreePlugin)
