@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::map::{Wall, Door};
+use crate::dungeon::{Wall, Door};
 use crate::enemy::Enemy;
 use crate::events::{EnemyCollisionEvent, EndGameEvent};
 use crate::GameState;
