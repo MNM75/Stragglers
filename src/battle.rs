@@ -71,6 +71,8 @@ fn battle_input(
                     if enemy_stats.hp <= 0 {
                         
                         info!("Enemy defeated!");
+                        player_stats.skill_points += 1;
+                        //player_stats.ability_points += 1;
                         despawn_closest_enemy(commands, enemy_query, player_query);  // Despawn the enemy if defeated
                         next_state.set(GameState::InGame);
 
@@ -96,6 +98,8 @@ fn battle_input(
 
                     if enemy_stats.hp <= 0 {
                         info!("Enemy defeated!");
+                        player_stats.skill_points += 1;
+                        //player_stats.ability_points += 1;
                         despawn_closest_enemy(commands, enemy_query, player_query);  // Despawn the enemy if defeated
                         next_state.set(GameState::InGame);
 
@@ -115,11 +119,11 @@ fn battle_input(
                 let heal_amt = heal(4, player_stats.magic); // get the heal amount (just a flat 5 hp for now)
                 player_stats.hp = current_hp + heal_amt.clamp(0, max_hp - current_hp);
                 insert_battledialogue(battle_dialogue_query, format!("Player healed for {heal_amt} hp!"));
-                //info!("Player healed! Player hp is now: {}", player_stats.hp);d
+                info!("Player healed! Player hp is now: {}", player_stats.hp);
             }
-            info!("press 5 to end turn");
+            //info!("press 5 to end turn");
             // later: change turn state here
-            //next_turn_state.set(BattleState::EnemyTurn);
+            next_turn_state.set(BattleState::EnemyTurn);
             
             //enemy_attack(player_stat_query, enemy_stat_query);
 
