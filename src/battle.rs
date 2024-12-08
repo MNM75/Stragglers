@@ -25,7 +25,7 @@ impl Plugin for BattlePlugin{
     }
 }
 
-fn battle_input(
+pub fn battle_input(
     /* for input */
     state: Res<State<GameState>>,
     mut next_state: ResMut<NextState<GameState>>,
@@ -166,7 +166,7 @@ fn battle_heal(
 
 }
 
-fn enemy_attack(
+pub fn enemy_attack(
     mut player_stat_query: Query<&mut PlayerStats, With<Player>>,
     mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
     mut battle_dialogue_query: Query<&mut BattleDialogue>,
