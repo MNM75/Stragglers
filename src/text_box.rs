@@ -131,7 +131,7 @@ fn setup_textbox(
         }.with_style(Style {
             position_type: PositionType::Absolute,
             bottom: Val::Px(50.0),
-            left: Val::Px(100.0),
+            left: Val::Px(80.0),
             ..default()
         })
     ));
@@ -173,7 +173,7 @@ fn setup_textbox(
         }.with_style(Style {
             position_type: PositionType::Absolute,
             bottom: Val::Px(500.0),
-            left: Val::Px(1000.0),
+            right: Val::Px(100.0),
             ..default()
         })
     ));

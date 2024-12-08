@@ -2,10 +2,13 @@ use bevy::prelude::*;
 use bevy::input::common_conditions::input_just_pressed;
 use std::time::Duration;
 
+use crate::player::PlayerStats;
 use crate::GameState;
 use crate::events::EnemyCollisionEvent;
 use crate::enemy::EnemyStats;
 use crate::enemy::Enemy;
+use crate::battle::battle_input;
+use crate::battle::enemy_attack;
 
 use crate::player::Player;
 use crate::WIN_W;
@@ -62,6 +65,8 @@ pub struct FightScenePlugin;
 static mut player_health: f32 =  1.0; 
 static mut enemy_health: f32 =  1.0; 
 
+static mut enemy_hpbar_posx: f32 = 0.0;     //crude way of updating hp bar, need its initial position for updating it
+static mut player_hpbar_posx: f32 = 0.0;
 
 impl Plugin for FightScenePlugin {
     fn build(&self, app: &mut App) {
@@ -73,7 +78,8 @@ impl Plugin for FightScenePlugin {
         app.add_systems(Update, trigger_animation::<PlayerSprite>.run_if(input_just_pressed(KeyCode::Digit1)));
         app.add_systems(Update, trigger_animation::<MagicSprite>.run_if(input_just_pressed(KeyCode::Digit2)));
         app.add_systems(Update, init_upon_collision);
-        app.add_systems(Update, update_enemy_health_bar);
+        app.add_systems(Update, (update_enemy_health_bar.after(battle_input)));
+        app.add_systems(Update, (update_player_health_bar.after(enemy_attack)));
     }
 }
 fn trigger_animation<S: Component>(mut query: Query<&mut AnimationConfig, With<S>>) {
@@ -276,7 +282,7 @@ fn setup_battle_ui(
             texture: healthbar_handle.clone(),
             transform: Transform {
                 translation: Vec3::new(-400.0-(240.0*(1.0-unsafe { player_health })), 200., 2.), // position health bar above the background
-                scale: Vec3::new(1.0 * unsafe { player_health }, 0.1, 1.0), // scale based on player's health
+                scale: Vec3::new(1.0 * unsafe { player_health }, 0.1, 2.0), // scale based on player's health
                 ..default()
             },
             ..default()
@@ -317,6 +323,7 @@ fn setup_battle_ui(
         FightSprites,
         FightScene
     ));
+    
 }
 
 
@@ -324,28 +331,32 @@ fn setup_battle_ui(
 //NOT completely working, feel free to remove if needed
 //  - green health bar only moves to the left of the screen after taking damage, going out of bounds instead of completely disappearing
 fn update_enemy_health_bar(
-    mut commands: Commands,
-    mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
+    enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
     mut enemy_hb: Query<&mut Transform, (With<EnemyHealthBar>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBarBackground>)>,
-    player: Query<&Transform, (With<Player>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBar>, Without<EnemyHealthBarBackground>)>,
-
 ){
     if let Ok(enemy_stats) = enemy_stat_query.get_single(){
-        unsafe { enemy_health = (&enemy_stats.hp/&enemy_stats.max_hp) as f32 };
+        let enemy_health_percent = (enemy_stats.hp as f32/enemy_stats.max_hp as f32);
+
+        let mut ehb = enemy_hb.single_mut();    //enemy health bar 
+        info!("translation: {}, percent {}\n", ehb.translation.x, enemy_health_percent);
+        ehb.translation.x = unsafe { enemy_hpbar_posx } + (1.0-enemy_health_percent) * (enemy_stats.max_hp as f32)*10.0;
+        ehb.scale.x = enemy_health_percent;
+        info!("New translation: {}\n", ehb.translation.x);
     }
-
-    
-    let pt = player.single();
-    let x_bound = LEVEL_W / 2. - WIN_W / 2.;
-    let y_bound = LEVEL_H / 2. - WIN_H / 2.;
-    let mut ehb = enemy_hb.single_mut();    //enemy health bar 
-
-    ehb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)+400.0+(240.0*(1.0 - unsafe { enemy_health }));
-    ehb.translation.y = pt.translation.y.clamp(-y_bound, y_bound)+200.0;   // same logic as camera/player movement
-    ehb.translation.z = pt.translation.z + 1.2;
-
 }
 
+fn update_player_health_bar(
+    mut player_stat_query: Query<&mut PlayerStats, With<Player>>,
+    mut player_hb: Query<&mut Transform, (With<PlayerHealthBar>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<EnemyHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBarBackground>)>,
+){
+    if let Ok(player_stats) = player_stat_query.get_single(){
+        let player_health_percent = (player_stats.hp as f32/player_stats.max_hp as f32);
+
+        let mut phb = player_hb.single_mut();    //enemy health bar
+        phb.translation.x = unsafe { player_hpbar_posx } - (1.0-player_health_percent) * (player_stats.max_hp as f32)*10.0;
+        phb.scale.x = player_health_percent;
+    }
+}
 
 // Hide
 fn show_battle_ui(
@@ -399,6 +410,7 @@ fn show_battle_ui(
     phb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)-400.0-(240.0*(1.0-unsafe { player_health }));   // same logic as camera/player movement
     phb.translation.y = pt.translation.y.clamp(-y_bound, y_bound)+200.0;   // same logic as camera/player movement
     phb.translation.z = pt.translation.z + 1.2;
+    unsafe { player_hpbar_posx = phb.translation.x};    //setting intital posx here
 
     let mut phbb = player_hbb.single_mut();
 
@@ -411,6 +423,7 @@ fn show_battle_ui(
     ehb.translation.x = pt.translation.x.clamp(-x_bound, x_bound)+400.0-(240.0*(1.0-unsafe { enemy_health }));   // same logic as camera/player movement
     ehb.translation.y = pt.translation.y.clamp(-y_bound, y_bound)+200.0;   // same logic as camera/player movement
     ehb.translation.z = pt.translation.z + 1.2;
+    unsafe { enemy_hpbar_posx = ehb.translation.x};
 
     let mut ehbb = enemy_hbb.single_mut();  //enemy health bar background
 
