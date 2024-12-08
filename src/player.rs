@@ -10,8 +10,8 @@ const TILE_SIZE: u32 = 144;
 const PLAYER_SPEED: f32 = 500.;
 const ACCEL_RATE: f32 = 5000.;
 
-pub const LEVEL_W: f32 = 8000.;
-pub const LEVEL_H: f32 = 1920.;
+pub const LEVEL_W: f32 = 16200.;
+pub const LEVEL_H: f32 = 16000.;
 
 const ANIM_TIME: f32 = 0.2;
 enum PlayerType {
