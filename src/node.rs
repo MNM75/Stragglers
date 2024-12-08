@@ -51,16 +51,9 @@ impl Node {
             ucb_value: 0.,
         }
     }
-}
-
-pub trait NodeFunctions {
-    fn add_atk_low_child(&self, value: f32) -> Self;
-}
-
-impl NodeFunctions for Rc<RefCell<Node>> {
-    fn add_atk_low_child(&self, value: f32) -> Self {
-        let new_atk_low_child = Node {
-            parent: Some(Rc::downgrade(self)),
+    fn new_child(parent: ParentLink, value: f32) -> Self {
+        Node {
+            parent,
             atk_low_child: None,
             atk_high_child: None,
             matk_hit_child: None,
@@ -69,11 +62,22 @@ impl NodeFunctions for Rc<RefCell<Node>> {
             value,
             times_visited: 0,
             ucb_value: 0.,
-        };
+        }
+    }
+}
 
-        let rc = Rc::new(RefCell::new(new_atk_low_child));
-        self.borrow_mut().atk_low_child = Option::Some(Rc::clone(&rc));
-        rc
+pub trait NodeFunctions {
+    fn add_atk_low_child(&self, value: f32) -> Self;
+}
+
+impl NodeFunctions for Rc<RefCell<Node>> {
+    fn add_atk_low_child(&self, value: f32) -> Self {
+        let new_atk_low_child = Node::new_child(Some(Rc::downgrade(self)), value);  // create child node
+
+        let rc = Rc::new(RefCell::new(new_atk_low_child));                          // create reference to child node
+        self.borrow_mut().atk_low_child = Some(Rc::clone(&rc));                                  // set self.atk_low_child ref to rc
+
+        Rc::clone(&rc)  // returns this value
     }
 }
 
@@ -85,28 +89,14 @@ impl Plugin for NodePlugin {
     }
 }
 
-// fn add_atk_low_child(parent_ref: &Rc<RefCell<Node>>, value: f32) -> Rc<RefCell<Node>> {
-//     let new_atk_low_child = Node {
-//         parent: Some(Rc::downgrade(parent_ref)),
-//         atk_low_child: None,
-//         atk_high_child: None,
-//         matk_hit_child: None,
-//         matk_miss_child: None,
-//         heal_child: None,
-//         value,
-//         times_visited: 0,
-//         ucb_value: 0.,
-//     };
-
-//     let rc = Rc::new(RefCell::new(new_atk_low_child));
-//     parent_ref.borrow_mut().atk_low_child = Option::Some(Rc::clone(&rc));
-//     rc
-// }
-
 fn print_node(node: &Node) {
     info!("value: {}", node.value.to_string());
     info!("times_visited: {}", node.times_visited.to_string());
     info!("ucb_value: {}", node.ucb_value.to_string());
+}
+
+fn print_node_ref(node: &Rc<RefCell<Node>>) {
+    info!("value: {:?}", node.clone());
 }
 
 fn update_value(node: &mut Node, value: f32) {
@@ -133,15 +123,8 @@ fn make_test_tree() {
     let mut n2 = Node::new();
     print_node(&n2);
 
-    let c = Rc::new(RefCell::new(root)).add_atk_low_child(5.);
-    //print_node(&c.);
+    let r = Rc::new(RefCell::new(root.clone()));
+    let c = Rc::new(RefCell::new(root.clone())).add_atk_low_child(5.);
+    print_node_ref(&r);
+    print_node_ref(&c);
 }
-
-
-// need to allocate these on the heap, box will help with that
-// doubly linked - need reference counting, RC smart pointer type
-    // use clone
-    // ARC
-    // leetcode, look at tree problems set language and see other's solutions
-
-    // arc box <t>
