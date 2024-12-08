@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::map::{Wall, Door};
+use crate::dungeon::{Wall, Door};
 use crate::enemy::Enemy;
 use crate::events::{EnemyCollisionEvent, EndGameEvent};
 use crate::GameState;
@@ -113,7 +113,7 @@ impl Plugin for PlayerPlugin{
                 strength: 1,
                 magic: 1,
                 agility: 1,
-                health: 1,
+                health: 2,
                 next_action_tick: 0,
             }
         }
@@ -136,7 +136,7 @@ impl Plugin for PlayerPlugin{
             self.matk = 5 * self.magic + bonus.matk;
             self.mdef = 5 * self.magic + bonus.mdef;
             self.spd = self.agility + bonus.spd;
-            self.max_hp = self.health * 10 + bonus.max_hp;
+            self.max_hp = self.health * 5 + bonus.max_hp;
         }
     }
 

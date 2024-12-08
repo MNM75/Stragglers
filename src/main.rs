@@ -1,6 +1,6 @@
 use bevy::{prelude::*, window::PresentMode};
 
-mod map;
+//mod map;
 mod player;
 mod skill_tree;
 mod text_box;
@@ -14,8 +14,9 @@ mod turn_order;
 mod defeat;
 mod node;
 mod welcome;
+mod dungeon;
 
-use map::MapPlugin;
+//use map::MapPlugin;
 use welcome::WelcomePlugin;
 use player::PlayerPlugin;
 use turn_order::TurnOrder;
@@ -29,6 +30,7 @@ use battle::BattlePlugin;
 use end_credits::EndCreditsPlugin;
 use defeat::DefeatScreenPlugin; 
 use node::NodePlugin;
+use dungeon::DungeonPlugin;
 
 const TITLE: &str = "main";
 const WIN_W: f32 = 1280.;
@@ -84,8 +86,10 @@ fn main() {
         .init_state::<GameState>()
         .init_state::<MenuState>()
         .add_plugins(WelcomePlugin)
+        //.add_plugins(MapPlugin)
+        .add_plugins(DungeonPlugin)
         .init_state::<BattleState>()
-        .add_plugins(MapPlugin)
+        //.add_plugins(MapPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(SkillTreePlugin)
         .add_plugins(FightScenePlugin)
