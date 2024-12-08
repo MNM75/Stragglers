@@ -64,7 +64,7 @@ pub struct MazePlugin;
 impl Plugin for MazePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(MazeGrid::new(GRID_WIDTH, GRID_HEIGHT)) // Add the grid as a resource
-            .add_systems(Startup, generate_maze);
+            .add_systems(Startup, initialize_maze);
     }
 }
 /// Wilson's Algorithm Functions ///
@@ -229,6 +229,17 @@ fn print_grid(grid: &Vec<Vec<GridCell>>) {
 
 const GRID_WIDTH: usize = 4; // Width of the grid
 const GRID_HEIGHT: usize = 4; // Height of the grid
+
+
+fn initialize_maze(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
+    mut maze_grid: ResMut<MazeGrid>,
+) {
+    // Example of how to call generate_maze
+    generate_maze(maze_grid, commands, asset_server, texture_atlases);
+}
 
 fn generate_maze(
     mut maze_grid: ResMut<MazeGrid>,  
