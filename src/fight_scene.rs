@@ -127,6 +127,7 @@ fn init_upon_collision(
 ){
     for _event in collision_events.read() {
         match state.get() {
+            GameState::Welcome => next_state.set(GameState::BattleMode),
             GameState::InGame => next_state.set(GameState::BattleMode),
             GameState::BattleMode => next_state.set(GameState::BattleMode),
             GameState::SkillTreeMenu => next_state.set(GameState::BattleMode),

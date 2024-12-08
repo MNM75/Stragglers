@@ -32,6 +32,33 @@ struct Enemyhp;
 #[derive(Component)]
 struct TextboxBackground;
 
+#[derive(Component)]
+struct BattleLogTag;
+
+#[derive(Component)]
+pub struct BattleDialogue{
+    pub dialogue1: String,
+    pub dialogue2: String,
+    pub dialogue3: String,
+}
+
+impl BattleDialogue{
+    pub fn new() -> Self {
+        Self {
+            dialogue1: String::from(""),
+            dialogue2: String::from(""),
+            dialogue3: String::from(">Battle Start"),
+        }
+    }
+
+    pub fn change(&mut self, text: String){
+        self.dialogue1 = self.dialogue2.clone();
+        self.dialogue2 = self.dialogue3.clone();
+        self.dialogue3 = text.clone();
+    }
+    
+}
+
 pub struct TextboxPlugin;
 
 impl Plugin for TextboxPlugin {
@@ -45,6 +72,7 @@ impl Plugin for TextboxPlugin {
         app.add_systems(Update, menu_interaction);
         app.add_systems(Update, update_playerhp.after(menu_interaction));
         app.add_systems(Update, update_enemyhp.after(menu_interaction));
+        app.add_systems(Update, update_battledialogue.after(menu_interaction));
 
     }
 }
@@ -149,6 +177,72 @@ fn setup_textbox(
             ..default()
         })
     ));
+    //battle dialogue display
+    commands.spawn((
+        BattleDialogue::new(),
+    ));
+    let mut bd= BattleDialogue::new();
+    
+    commands.spawn((    //top of dialogue, bd[0]
+        Textbox,
+        BattleLogTag,
+        TextBundle {
+            text: Text::from_section(
+                bd.dialogue1.clone(),        
+                TextStyle {
+                    font_size: 25.0,
+                    color: Color::WHITE,
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        }.with_style(Style {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(50.0),
+            right: Val::Px(40.0),
+            ..default()
+        }),
+    ));
+    commands.spawn((    //middle of dialogue, bd[1]
+        Textbox,
+        BattleLogTag,
+        TextBundle {
+            text: Text::from_section(
+                bd.dialogue2.clone(),       
+                TextStyle {
+                    font_size: 25.0,
+                    color: Color::WHITE,
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        }.with_style(Style {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(30.0),
+            right: Val::Px(40.0),
+            ..default()
+        }),
+    ));
+    commands.spawn((    //bottom of dialogue, bd[2]
+        Textbox,
+        BattleLogTag,
+        TextBundle {
+            text: Text::from_section(
+                bd.dialogue3.clone(),        
+                TextStyle {
+                    font_size: 25.0,
+                    color: Color::WHITE,
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        }.with_style(Style {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(10.0),
+            right: Val::Px(40.0),
+            ..default()
+        }),
+    ));
 }
 
 fn menu_interaction(
@@ -219,6 +313,31 @@ fn update_enemyhp(
     if let Ok(enemy_stat) = enemy_stat_query.get_single(){
         for mut text in &mut enemyhpquery.iter_mut(){
             text.sections[0].value = enemy_stat.hp.to_string() + "/"+ &enemy_stat.max_hp.to_string();
+        }
+    }
+}
+
+fn update_battledialogue(
+    mut battle_log_query: Query<&mut Text, With<BattleLogTag>>,          //to access the dialogue box
+    battle_dialogue_query: Query<&mut BattleDialogue>,                   //to get the actual dialogue strings
+){
+    if let Ok(battle_dialogue) = battle_dialogue_query.get_single(){
+        let mut counter = 1;
+        for mut text in &mut battle_log_query.iter_mut(){
+            if(counter == 1){
+                //text.sections[0].value = battle_dialogue.dialogue1.clone();
+                text.sections[0].value = battle_dialogue.dialogue1.clone();
+                text.sections[0].style.color = Color::srgb(1.0, 1.0, 1.0);
+            }
+            else if(counter == 2){
+                text.sections[0].value = battle_dialogue.dialogue2.clone();
+                text.sections[0].style.color = Color::srgb(1.0, 1.0, 0.7);
+            }
+            else if(counter == 3){
+                text.sections[0].value = battle_dialogue.dialogue3.clone();
+                text.sections[0].style.color = Color::srgb(1.0, 1.0, 0.0);
+            }
+            counter += 1;   //should only interate 3 times since there are only 3 entites tagged wiith BattleLogTag
         }
     }
 }
