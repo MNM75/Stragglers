@@ -889,7 +889,7 @@ fn spend_ability_point(
                 player_stats.agility += 1;
             } else if input.just_pressed(KeyCode::KeyJ) { //j to upgrade max_hp all temporary for now
                 player_stats.health += 1;
-                player_stats.heal(10);
+                player_stats.heal(5);
             } else {
                 return; // No valid key pressed, exit early
             }

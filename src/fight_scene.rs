@@ -149,6 +149,7 @@ fn setup_battle_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
+    mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
 ) {
         
 
@@ -163,8 +164,8 @@ fn setup_battle_ui(
     let magic_layout = TextureAtlasLayout::from_grid(UVec2::new(216, 202), 8, 1, None, None);
     let magic_layout_handle = texture_atlases.add(magic_layout);
     let animation_config_2 = AnimationConfig::new(0, 7, 24);
-
     let enemy_texture_handle = asset_server.load("enemyPlaceHolder.png");
+   
     let healthbar_background_handle = asset_server.load("healthbarBackground.png");
     let healthbar_handle = asset_server.load("healthbar.png");
 
