@@ -567,7 +567,7 @@ fn create_path(grid: &mut Vec<Vec<GridCell>>, row: usize, col: usize) {
 
     // If the current cell is part of the UST, stop processing
     if in_UST(&grid, row, col) {
-        println!("Found a path at ({}, {})", current_row, current_col);
+        //println!("Found a path at ({}, {})", current_row, current_col);
         return; // Stop if we find a Tile
     }
 
@@ -641,31 +641,31 @@ fn generate_maze(
     grid[random_row][random_col].cell_type = Cell::Tile; // Mark it as a Tile
 
     // Now that the cell is marked, we can access it immutably
-    println!(
-        "First randomly selected and marked cell at ({}, {}): {:?}",
-        random_row, random_col, grid[random_row][random_col]
-    );
+    // println!(
+    //     "First randomly selected and marked cell at ({}, {}): {:?}",
+    //     random_row, random_col, grid[random_row][random_col]
+    // );
 
     // Continue finding and visiting random unvisited cells until all cells are visited
     while let Some((row, col)) = get_random_unvisited_cell(&grid) {
-        println!("Randomly selected new unvisited cell at ({}, {})", row, col);
+        //println!("Randomly selected new unvisited cell at ({}, {})", row, col);
 
         let cell = &grid[row][col]; // Access the cell in the grid
         if let Cell::Tile = cell.cell_type {
             // Skip cells part of UST (Tile)
-            println!("The selected cell is a Tile at ({}, {})", row, col);
+            //println!("The selected cell is a Tile at ({}, {})", row, col);
             continue;
         } else {
             if is_within_bounds(&mut grid, row, col) {
                 // Only execute this block if the cell is a Wall
-                println!("The selected cell is a Wall at ({}, {})", row, col);
+                //println!("The selected cell is a Wall at ({}, {})", row, col);
 
                 // Call `create_path` to explore from this unvisited cell
                 create_path(&mut grid, row, col);
             }
         }
     }
-    print_grid(&grid);
+    //print_grid(&grid);
 
     let actual_grid = blueprint_to_grid(&mut commands, &asset_server, &mut texture_atlases, &grid);
     let doubled_grid = double_grid(&mut commands, &asset_server, &mut texture_atlases, &actual_grid);
