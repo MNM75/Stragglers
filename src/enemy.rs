@@ -5,7 +5,7 @@ use crate::player::Player;
 const TILE_SIZE: u32 = 144;
 const ENEMY_SIZE: u32 = 144;
 const ENEMY_SPEED: f32 = 50.0;
-const PACE_BOUNDARY: usize = 2;
+const PACE_BOUNDARY: usize = 1;
 
 #[derive(Component)]
 pub struct Enemy{
@@ -110,6 +110,33 @@ fn enemy_pace(
             enemy.direction = 1;
         }
         transform.translation.z = 900.0
+    }
+}
+
+pub fn find_closest_enemy(
+    mut commands: &Commands,
+    enemy_query: &Query<(Entity, &Transform), With<Enemy>>,
+    player_query: &Query<&Transform, With<Player>>,
+) -> Option<Entity> {
+    let player_transform = player_query.single();
+    let mut closest_enemy: Option<(Entity, f32)> = None;
+
+    for (enemy_entity, enemy_transform) in enemy_query.iter() {
+        let distance = player_transform.translation.distance(enemy_transform.translation);
+        if let Some((_, closest_distance)) = closest_enemy {
+            if distance < closest_distance {
+                closest_enemy = Some((enemy_entity, distance));
+            }
+        } else {
+            closest_enemy = Some((enemy_entity, distance));
+        }
+    }
+
+    if let Some((closest_enemy_entity, _)) = closest_enemy {
+        closest_enemy.map(|(entity, _)| entity)
+    }
+    else {
+        None
     }
 }
 
