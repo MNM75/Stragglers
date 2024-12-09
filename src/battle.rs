@@ -10,6 +10,7 @@ use crate::text_box::BattleDialogue;
 
 use crate::player::Player;
 use crate::enemy::Enemy;
+use crate::enemy::find_closest_enemy;
 use crate::enemy::despawn_closest_enemy;
 
 use crate::attack::choose_attack;
@@ -35,11 +36,11 @@ pub fn battle_input(
     mut player_stat_query: Query<&mut PlayerStats, With<Player>>,
     mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
     mut battle_dialogue_query: Query<&mut BattleDialogue>,
-    //use TurnOrder to ensure it is player's turn
+
     commands: Commands,
     enemy_query: Query<(Entity, &Transform), With<Enemy>>,
     player_query: Query<&Transform, With<Player>>,
-    
+    //use TurnOrder to ensure it is player's turn
 ) {
     // The turn system will be integrated here: Before checking for player input, 
     // we will check if it’s the player's turn to act.
@@ -58,58 +59,60 @@ pub fn battle_input(
         }
 
         if input.just_pressed(KeyCode::Digit1) { //later on we can just if the different attacks there are and query player stats.
-            if let Ok(mut enemy_stats) = enemy_stat_query.get_single_mut() {
-                if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
-   
-                    // Simple attack that deals 10 damage to the enemy
-                    let attack_dmg = physical_attack(5, player_stats.atk, enemy_stats.physdef);//why is attack using eenemy magic attack?
-                    enemy_stats.hp = enemy_stats.hp.saturating_sub(attack_dmg);
-                    
-                    insert_battledialogue(battle_dialogue_query, format!("Enemy was attacked for {attack_dmg} damage!"));
-                    info!("Enemy was attacked with sword for {} damage! Enemy HP is now: {}", attack_dmg, enemy_stats.hp);
-
-                    if enemy_stats.hp <= 0 {
+            if let Some(closest_enemy) = find_closest_enemy(&commands, &enemy_query, &player_query){
+                if let Ok(mut enemy_stats) = enemy_stat_query.get_mut(closest_enemy) {
+                    if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
+       
+                        // Simple attack that deals 10 damage to the enemy
+                        let attack_dmg = physical_attack(5, player_stats.atk, enemy_stats.physdef);//why is attack using eenemy magic attack?
+                        enemy_stats.hp = enemy_stats.hp.saturating_sub(attack_dmg);
                         
-                        info!("Enemy defeated!");
-                        player_stats.skill_points += 1;
-                        //player_stats.ability_points += 1;
-                        despawn_closest_enemy(commands, enemy_query, player_query);  // Despawn the enemy if defeated
-                        next_state.set(GameState::InGame);
-
-                    } else {
-                        next_turn_state.set(BattleState::EnemyTurn);
-                        //enemy_attack(player_stat_query, enemy_stat_query);
+                        insert_battledialogue(battle_dialogue_query, format!("Enemy was attacked for {attack_dmg} damage!"));
+                        info!("Enemy was attacked with sword for {} damage! Enemy HP is now: {}", attack_dmg, enemy_stats.hp);
+    
+                        if enemy_stats.hp <= 0 {
+                            
+                            info!("Enemy defeated!");
+                            player_stats.skill_points += 1;
+                            //player_stats.ability_points += 1;
+                            despawn_closest_enemy(commands, enemy_query, player_query);  // Despawn the enemy if defeated
+                            next_state.set(GameState::InGame);
+    
+                        } else {
+                            next_turn_state.set(BattleState::EnemyTurn);
+                            //enemy_attack(player_stat_query, enemy_stat_query);
+                        }
                     }
                 }
             }
-            
         }
         else if input.just_pressed(KeyCode::Digit2) {
             //info!("magic attacked! but it had no effect...");
-            if let Ok(mut enemy_stats) = enemy_stat_query.get_single_mut() {
-                if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
-   
-                    // Simple attack that deals 10 damage to the enemy
-                    let attack_dmg = magic_attack(5, player_stats.matk, enemy_stats.mgkdef);
-                    enemy_stats.hp = enemy_stats.hp.saturating_sub(attack_dmg);
-                    
-                    insert_battledialogue(battle_dialogue_query, format!("Enemy was attacked with magic for {attack_dmg} damage!"));
-                    info!("Enemy was attacked with magic for {} damage! Enemy HP is now: {}", attack_dmg, enemy_stats.hp);
+            if let Some(closest_enemy) = find_closest_enemy(&commands, &enemy_query, &player_query) {
+                if let Ok(mut enemy_stats) = enemy_stat_query.get_mut(closest_enemy) {
+                    if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
+    
+                        // Simple attack that deals 10 damage to the enemy
+                        let attack_dmg = magic_attack(5, player_stats.matk, enemy_stats.mgkdef);
+                        enemy_stats.hp = enemy_stats.hp.saturating_sub(attack_dmg);
+                        
+                        insert_battledialogue(battle_dialogue_query, format!("Enemy was attacked with magic for {attack_dmg} damage!"));
+                        info!("Enemy was attacked with magic for {} damage! Enemy HP is now: {}", attack_dmg, enemy_stats.hp);
 
-                    if enemy_stats.hp <= 0 {
-                        info!("Enemy defeated!");
-                        player_stats.skill_points += 1;
-                        //player_stats.ability_points += 1;
-                        despawn_closest_enemy(commands, enemy_query, player_query);  // Despawn the enemy if defeated
-                        next_state.set(GameState::InGame);
+                        if enemy_stats.hp <= 0 {
+                            info!("Enemy defeated!");
+                            player_stats.skill_points += 1;
+                            //player_stats.ability_points += 1;
+                            despawn_closest_enemy(commands, enemy_query, player_query);  // Despawn the enemy if defeated
+                            next_state.set(GameState::InGame);
 
-                    } else {
-                        next_turn_state.set(BattleState::EnemyTurn);
-                        //enemy_attack(player_stat_query, enemy_stat_query);
+                        } else {
+                            next_turn_state.set(BattleState::EnemyTurn);
+                            //enemy_attack(player_stat_query, enemy_stat_query);
+                        }
                     }
                 }
-            }
-           
+            }   
         }
         else if input.just_pressed(KeyCode::Digit3) {
             //battle_heal(player_stat_query);
@@ -171,6 +174,10 @@ pub fn enemy_attack(
     mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
     mut battle_dialogue_query: Query<&mut BattleDialogue>,
     mut next_turn_state: ResMut<NextState<BattleState>>,
+
+    commands: Commands,
+    enemy_query: Query<(Entity, &Transform), With<Enemy>>,
+    player_query: Query<&Transform, With<Player>>,
 ) {
     //check if it is enemy's turn with TurnOrder
     // let rand: usize = random();
@@ -178,52 +185,56 @@ pub fn enemy_attack(
     let attack = choose_attack(&mut player_stat_query, &mut enemy_stat_query);
     //info!("attack value: {}", attack);
     let mut enemy_damage = 0;
-    if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
-        if let Ok(mut enemy_stats) = enemy_stat_query.get_single_mut() {
-            if (attack == 0){
-                enemy_damage = physical_attack(5, enemy_stats.physatk, player_stats.def);
-                player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
+    if let Some(closest_enemy) = find_closest_enemy(&commands, &enemy_query, &player_query) {
+        if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
+            if let Ok(mut enemy_stats) = enemy_stat_query.get_mut(closest_enemy) {
+                if (attack == 0){
+                    enemy_damage = physical_attack(5, enemy_stats.physatk, player_stats.def);
+                    player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
 
-                insert_battledialogue(battle_dialogue_query, format!("Enemy attacked you for {enemy_damage} damage!"));
-                info!("Enemy hit you for {} damage! Player HP is now: {}",enemy_damage, player_stats.hp);
-            } else if (attack == 1){
-                enemy_damage = magic_attack(5, enemy_stats.mgkatk, player_stats.mdef);
-                player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
+                    insert_battledialogue(battle_dialogue_query, format!("Enemy attacked you for {enemy_damage} damage!"));
+                    info!("Enemy hit you for {} damage! Player HP is now: {}",enemy_damage, player_stats.hp);
+                } else if (attack == 1){
+                    enemy_damage = magic_attack(5, enemy_stats.mgkatk, player_stats.mdef);
+                    player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
 
-                insert_battledialogue(battle_dialogue_query, format!("Enemy attacked you with a psychic force for {enemy_damage} damage!"));
-                info!("Enemy hit you with a psychic force for {} damage! Player HP is now: {}",enemy_damage, player_stats.hp);
-            } else if (attack == 2){
-                //enemy_heal(enemy_stat_query);
-                if let Ok(mut enemy_stats) = enemy_stat_query.get_single_mut() {
+                    insert_battledialogue(battle_dialogue_query, format!("Enemy attacked you with a psychic force for {enemy_damage} damage!"));
+                    info!("Enemy hit you with a psychic force for {} damage! Player HP is now: {}",enemy_damage, player_stats.hp);
+                } else if (attack == 2){
+                    //enemy_heal(enemy_stat_query);
                     let current_hp = enemy_stats.hp;
                     let max_hp = enemy_stats.max_hp;
                     let heal_amt = heal(4, enemy_stats.mgkatk); // get the heal amount (just a flat 5 hp for now)
                     enemy_stats.hp = current_hp + heal_amt.clamp(0, max_hp - current_hp);
-                    
+                        
                     insert_battledialogue(battle_dialogue_query, format!("Enemy healed for {heal_amt} hp!"));
                     info!("Enemy healed! Enemy hp is now: {}", enemy_stats.hp);
+                    player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
+                    
                 }
-                player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
-                
-            }
-        }       
-        
+            }       
+        }
     }
     next_turn_state.set(BattleState::PlayerTurn);
 }
 
 //moved function to enemy_attack to make it easier for insert_battledialogue to be called
 fn enemy_heal(
+    commands: Commands,
+    enemy_query: Query<(Entity, &Transform), With<Enemy>>,
+    player_query: Query<&Transform, With<Player>>,
     mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
 ) {
-    if let Ok(mut enemy_stats) = enemy_stat_query.get_single_mut() {
-        let current_hp = enemy_stats.hp;
-        let max_hp = enemy_stats.max_hp;
-        let heal_amt = heal(4, enemy_stats.mgkatk); // get the heal amount (just a flat 5 hp for now)
-        enemy_stats.hp = current_hp + heal_amt.clamp(0, max_hp - current_hp);
-        
-        info!("Enemy healed! Enemy hp is now: {}", enemy_stats.hp);
+    if let Some(closest_enemy) = find_closest_enemy(&commands, &enemy_query, &player_query) {
+        if let Ok(mut enemy_stats) = enemy_stat_query.get_mut(closest_enemy) {
+            let current_hp = enemy_stats.hp;
+            let max_hp = enemy_stats.max_hp;
+            let heal_amt = heal(4, enemy_stats.mgkatk); // get the heal amount (just a flat 5 hp for now)
+            enemy_stats.hp = current_hp + heal_amt.clamp(0, max_hp - current_hp);
+            
+            info!("Enemy healed! Enemy hp is now: {}", enemy_stats.hp);
 
+        }
     }
 }
 
