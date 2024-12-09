@@ -1,3 +1,5 @@
+use std::borrow::BorrowMut;
+
 use bevy::prelude::*;
 use rand::prelude::*;
 use crate::GameState;
@@ -55,7 +57,10 @@ pub fn battle_input(
         if let Ok(mut player_stats) = player_stat_query.get_single_mut() {
             if (player_stats.hp<=0){
                 next_state.set(GameState::DefeatScreen);
-            }
+                insert_battledialogue(battle_dialogue_query.borrow_mut(), format!(""));
+                insert_battledialogue(battle_dialogue_query.borrow_mut(), format!(""));
+                insert_battledialogue(battle_dialogue_query.borrow_mut(), format!(">Battle Start"));
+            } 
         }
 
         if input.just_pressed(KeyCode::Digit1) { //later on we can just if the different attacks there are and query player stats.
@@ -67,16 +72,18 @@ pub fn battle_input(
                         let attack_dmg = physical_attack(5, player_stats.atk, enemy_stats.physdef);//why is attack using eenemy magic attack?
                         enemy_stats.hp = enemy_stats.hp.saturating_sub(attack_dmg);
                         
-                        insert_battledialogue(battle_dialogue_query, format!("Enemy was attacked for {attack_dmg} damage!"));
+                        insert_battledialogue(battle_dialogue_query.borrow_mut(), format!("Enemy was attacked for {attack_dmg} damage!"));
                         info!("Enemy was attacked with sword for {} damage! Enemy HP is now: {}", attack_dmg, enemy_stats.hp);
     
                         if enemy_stats.hp <= 0 {
-                            
                             info!("Enemy defeated!");
                             player_stats.skill_points += 1;
                             //player_stats.ability_points += 1;
                             despawn_closest_enemy(commands, enemy_query, player_query);  // Despawn the enemy if defeated
                             next_state.set(GameState::InGame);
+                            insert_battledialogue(battle_dialogue_query.borrow_mut(), format!(""));
+                            insert_battledialogue(battle_dialogue_query.borrow_mut(), format!(""));
+                            insert_battledialogue(battle_dialogue_query.borrow_mut(), format!(">Battle Start"));
     
                         } else {
                             next_turn_state.set(BattleState::EnemyTurn);
@@ -96,7 +103,7 @@ pub fn battle_input(
                         let attack_dmg = magic_attack(5, player_stats.matk, enemy_stats.mgkdef);
                         enemy_stats.hp = enemy_stats.hp.saturating_sub(attack_dmg);
                         
-                        insert_battledialogue(battle_dialogue_query, format!("Enemy was attacked with magic for {attack_dmg} damage!"));
+                        insert_battledialogue(battle_dialogue_query.borrow_mut(), format!("Enemy was attacked with magic for {attack_dmg} damage!"));
                         info!("Enemy was attacked with magic for {} damage! Enemy HP is now: {}", attack_dmg, enemy_stats.hp);
 
                         if enemy_stats.hp <= 0 {
@@ -105,6 +112,9 @@ pub fn battle_input(
                             //player_stats.ability_points += 1;
                             despawn_closest_enemy(commands, enemy_query, player_query);  // Despawn the enemy if defeated
                             next_state.set(GameState::InGame);
+                            insert_battledialogue(battle_dialogue_query.borrow_mut(), format!(""));
+                            insert_battledialogue(battle_dialogue_query.borrow_mut(), format!(""));
+                            insert_battledialogue(battle_dialogue_query.borrow_mut(), format!(">Battle Start"));
 
                         } else {
                             next_turn_state.set(BattleState::EnemyTurn);
@@ -121,7 +131,7 @@ pub fn battle_input(
                 let max_hp = player_stats.max_hp;
                 let heal_amt = heal(4, player_stats.magic); // get the heal amount (just a flat 5 hp for now)
                 player_stats.hp = current_hp + heal_amt.clamp(0, max_hp - current_hp);
-                insert_battledialogue(battle_dialogue_query, format!("Player healed for {heal_amt} hp!"));
+                insert_battledialogue(battle_dialogue_query.borrow_mut(), format!("Player healed for {heal_amt} hp!"));
                 info!("Player healed! Player hp is now: {}", player_stats.hp);
             }
             //info!("press 5 to end turn");
@@ -143,6 +153,9 @@ pub fn battle_input(
                 GameState::DefeatScreen => next_state.set(GameState::DefeatScreen),
             }
             despawn_closest_enemy(commands, enemy_query, player_query);
+            insert_battledialogue(battle_dialogue_query.borrow_mut(), format!(""));
+            insert_battledialogue(battle_dialogue_query.borrow_mut(), format!(""));
+            insert_battledialogue(battle_dialogue_query.borrow_mut(), format!(">Battle Start"));
         /* else do nothing until player selects a valid battle option */
         } else if input.just_pressed(KeyCode::Digit5){
             next_turn_state.set(BattleState::EnemyTurn);
@@ -192,13 +205,13 @@ pub fn enemy_attack(
                     enemy_damage = physical_attack(5, enemy_stats.physatk, player_stats.def);
                     player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
 
-                    insert_battledialogue(battle_dialogue_query, format!("Enemy attacked you for {enemy_damage} damage!"));
+                    insert_battledialogue(battle_dialogue_query.borrow_mut(), format!("Enemy attacked you for {enemy_damage} damage!"));
                     info!("Enemy hit you for {} damage! Player HP is now: {}",enemy_damage, player_stats.hp);
                 } else if (attack == 1){
                     enemy_damage = magic_attack(5, enemy_stats.mgkatk, player_stats.mdef);
                     player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
 
-                    insert_battledialogue(battle_dialogue_query, format!("Enemy attacked you with a psychic force for {enemy_damage} damage!"));
+                    insert_battledialogue(battle_dialogue_query.borrow_mut(), format!("Enemy attacked you with a psychic force for {enemy_damage} damage!"));
                     info!("Enemy hit you with a psychic force for {} damage! Player HP is now: {}",enemy_damage, player_stats.hp);
                 } else if (attack == 2){
                     //enemy_heal(enemy_stat_query);
@@ -207,7 +220,7 @@ pub fn enemy_attack(
                     let heal_amt = heal(4, enemy_stats.mgkatk); // get the heal amount (just a flat 5 hp for now)
                     enemy_stats.hp = current_hp + heal_amt.clamp(0, max_hp - current_hp);
                         
-                    insert_battledialogue(battle_dialogue_query, format!("Enemy healed for {heal_amt} hp!"));
+                    insert_battledialogue(battle_dialogue_query.borrow_mut(), format!("Enemy healed for {heal_amt} hp!"));
                     info!("Enemy healed! Enemy hp is now: {}", enemy_stats.hp);
                     player_stats.hp = player_stats.hp.saturating_sub(enemy_damage);
                     
@@ -271,11 +284,11 @@ fn heal(base_heal: u32,magic_attack: u32) -> u32{
 
 
 fn insert_battledialogue(
-        mut battle_dialogue_query: Query<&mut BattleDialogue>,
+        mut battle_dialogue_query: &mut Query<&mut BattleDialogue>,
         text: String
 ){
     
-    for(mut battle_dialogue) in &mut battle_dialogue_query{
+    for(mut battle_dialogue) in battle_dialogue_query{
         battle_dialogue.change(text.clone());
     }
 }

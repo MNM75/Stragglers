@@ -12,6 +12,7 @@ mod end_credits;
 mod attack;
 mod turn_order;
 mod defeat;
+mod node;
 mod welcome;
 mod dungeon;
 
@@ -28,6 +29,7 @@ use events::EndGameEvent;
 use battle::BattlePlugin;
 use end_credits::EndCreditsPlugin;
 use defeat::DefeatScreenPlugin; 
+use node::NodePlugin;
 use dungeon::DungeonPlugin;
 
 const TITLE: &str = "main";
@@ -96,6 +98,7 @@ fn main() {
         .add_plugins(TextboxPlugin)
         .add_plugins(EndCreditsPlugin)
         .add_plugins(DefeatScreenPlugin)
+        .add_plugins(NodePlugin)
         /*
             add other plugins here
         */

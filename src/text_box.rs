@@ -347,6 +347,20 @@ fn update_battledialogue(
     }
 }
 
+fn reset_battle_dialogue(
+    mut battle_log_query: Query<&mut Text, With<BattleLogTag>>,          //to access the dialogue box
+){
+    for mut text in &mut battle_log_query.iter_mut(){
+        //text.sections[0].value = battle_dialogue.dialogue1.clone();
+        text.sections[0].value = "".to_string();
+        text.sections[0].style.color = Color::srgb(1.0, 1.0, 1.0);
+        text.sections[0].value = "".to_string();
+        text.sections[0].style.color = Color::srgb(1.0, 1.0, 0.7);
+        text.sections[0].value = ">Battle Start".to_string();
+        text.sections[0].style.color = Color::srgb(1.0, 1.0, 0.0);
+    }
+}
+
 // Show all textboxes
 fn show_textbox(
     mut commands: Commands,
