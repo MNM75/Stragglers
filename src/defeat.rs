@@ -62,7 +62,7 @@ fn spawn_defeat_screen(
                     "Respawn",
                     TextStyle {
                         font_size: 30.0,
-                        color: Color::WHITE,
+                        color: Color::BLACK,
                         ..Default::default()
                     },
                 ),
