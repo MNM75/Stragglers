@@ -214,7 +214,7 @@ fn create_dungeon( //main function that calls all other spawining functions
         &mut texture_atlases,
         5,
         room9_start_position,
-        2, //CHANGE TO BOSS TYPE
+        3, //CHANGE TO BOSS TYPE
     );
     //end room
     let room10_start_position = Vec3::new(

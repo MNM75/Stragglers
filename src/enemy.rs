@@ -29,22 +29,60 @@ pub struct EnemyStats {
 
 impl EnemyStats {
     pub fn new(etype: u32) -> Self {
-        Self {
-            physatk: 1,
-            physdef: 1,
-            mgkatk: 1,
-            mgkdef: 1,
-            speed: 1,
-            max_hp: 25,
-            hp: 25,
-            etype,
-            next_action_tick: 0,
+        match etype {
+            1 => Self {
+                physatk: 1,
+                physdef: 1,
+                mgkatk: 1,
+                mgkdef: 1,
+                speed: 1,
+                max_hp: 25,
+                hp: 25,
+                etype,
+                next_action_tick: 0,
+            },
+            2 => Self {
+                physatk: 2,
+                physdef: 2,
+                mgkatk: 2,
+                mgkdef: 2,
+                speed: 2,
+                max_hp: 35,
+                hp: 35,
+                etype,
+                next_action_tick: 0,
+            },
+            3 => Self {
+                // Boss stats
+                physatk: 10,
+                physdef: 8,
+                mgkatk: 12,
+                mgkdef: 10,
+                speed: 5,
+                max_hp: 100,
+                hp: 100,
+                etype,
+                next_action_tick: 0,
+            },
+            _ => Self {
+                physatk: 1,
+                physdef: 1,
+                mgkatk: 1,
+                mgkdef: 1,
+                speed: 1,
+                max_hp: 25,
+                hp: 25,
+                etype,
+                next_action_tick: 0,
+            },
         }
     }
+
     pub fn sprite_path(&self) -> &'static str {
         match self.etype {
             1 => "enemyPlaceHolder.png",
             2 => "characterProto.png",
+            3 => "BossSpriteFinal.png", // Boss sprite
             _ => "tileProto.png",
         }
     }
@@ -56,7 +94,6 @@ impl Plugin for EnemyPlugin{
     fn build(&self, app: &mut App){
         app.add_systems(Update, enemy_pace.run_if(in_state(GameState::InGame)));
     }
-
 }
 
 pub fn spawn_enemy(
@@ -75,7 +112,7 @@ pub fn spawn_enemy(
     let left_boundary = position.x - (TILE_SIZE as f32 * PACE_BOUNDARY as f32);
     let right_boundary = position.x + (TILE_SIZE as f32 * PACE_BOUNDARY as f32);
 
-    commands.spawn((
+    commands.spawn(( 
         SpriteBundle {
             texture: enemy_texture_handle.clone(),
             transform: Transform {
@@ -85,27 +122,27 @@ pub fn spawn_enemy(
             ..default()
         },
         TextureAtlas {
-            index: 0, 
+            index: 0,
             layout: enemy_layout_handle.clone(),
         },
-        Enemy  {
+        Enemy {
             direction: 1,
             left_boundary,
             right_boundary,
         },
-        EnemyStats::new(etype),
+        enemy_stats,
     ));
 }
 
 fn enemy_pace(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut Enemy)>,
-){
+) {
     for (mut transform, mut enemy) in query.iter_mut() {
         transform.translation.x += enemy.direction as f32 * ENEMY_SPEED * time.delta_seconds();
         //turn if needed
         if transform.translation.x > enemy.right_boundary {
-            enemy.direction = -1; 
+            enemy.direction = -1;
         } else if transform.translation.x < enemy.left_boundary {
             enemy.direction = 1;
         }
