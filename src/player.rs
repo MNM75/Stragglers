@@ -108,12 +108,12 @@ impl Plugin for PlayerPlugin{
                 spd: 0,
                 max_hp: 10,
                 hp: 10,
-                skill_points: 4,
-                ability_points: 8,
+                skill_points: 0,
+                ability_points: 12,
                 strength: 1,
                 magic: 1,
                 agility: 1,
-                health: 2,
+                health: 1,
                 next_action_tick: 0,
             }
         }

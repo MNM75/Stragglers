@@ -54,13 +54,13 @@ impl EnemyStats {
             },
             3 => Self {
                 // Boss stats
-                physatk: 10,
-                physdef: 8,
-                mgkatk: 12,
+                physatk: 3,
+                physdef: 3,
+                mgkatk: 10,
                 mgkdef: 10,
                 speed: 5,
-                max_hp: 100,
-                hp: 100,
+                max_hp: 50,
+                hp: 50,
                 etype,
                 next_action_tick: 0,
             },
