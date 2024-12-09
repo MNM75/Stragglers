@@ -9,6 +9,7 @@ use crate::enemy::EnemyStats;
 use crate::enemy::Enemy;
 use crate::battle::battle_input;
 use crate::battle::enemy_attack;
+use crate::enemy::find_closest_enemy;
 
 use crate::player::Player;
 use crate::WIN_W;
@@ -332,17 +333,22 @@ fn setup_battle_ui(
 //NOT completely working, feel free to remove if needed
 //  - green health bar only moves to the left of the screen after taking damage, going out of bounds instead of completely disappearing
 fn update_enemy_health_bar(
-    enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
-    mut enemy_hb: Query<&mut Transform, (With<EnemyHealthBar>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBarBackground>)>,
+    mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,
+    mut enemy_hb: Query<&mut Transform, (With<EnemyHealthBar>, Without<Enemy>, Without<Player>, Without<BattleBackground>, Without<PlayerSprite>, Without<EnemySprite>, Without<PlayerHealthBar>, Without<PlayerHealthBarBackground>, Without<EnemyHealthBarBackground>)>,
+    commands: Commands,
+    enemy_query: Query<(Entity, &Transform), With<Enemy>>,
+    player_query: Query<&Transform, With<Player>>,
 ){
-    if let Ok(enemy_stats) = enemy_stat_query.get_single(){
-        let enemy_health_percent = (enemy_stats.hp as f32/enemy_stats.max_hp as f32);
+    if let Some(closest_enemy) = find_closest_enemy(&commands, &enemy_query, &player_query){
+        if let Ok(mut enemy_stats) = enemy_stat_query.get_mut(closest_enemy) {
+            let enemy_health_percent = (enemy_stats.hp as f32/enemy_stats.max_hp as f32);
 
-        let mut ehb = enemy_hb.single_mut();    //enemy health bar 
-        info!("translation: {}, percent {}\n", ehb.translation.x, enemy_health_percent);
-        ehb.translation.x = unsafe { enemy_hpbar_posx } + (1.0-enemy_health_percent) * (enemy_stats.max_hp as f32)*10.0;
-        ehb.scale.x = enemy_health_percent;
-        info!("New translation: {}\n", ehb.translation.x);
+            let mut ehb = enemy_hb.single_mut();    //enemy health bar 
+            //info!("translation: {}, percent {}\n", ehb.translation.x, enemy_health_percent);
+            ehb.translation.x = unsafe { enemy_hpbar_posx } + (1.0-enemy_health_percent) * (enemy_stats.max_hp as f32)*10.0;
+            ehb.scale.x = enemy_health_percent;
+            //info!("New translation: {}\n", ehb.translation.x);
+        }
     }
 }
 
