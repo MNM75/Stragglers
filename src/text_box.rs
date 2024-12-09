@@ -15,7 +15,7 @@ use crate::player::LEVEL_H;
 use crate::player::PlayerStats; // }
 use crate::enemy::EnemyStats;   // }for player and enemy hp displays
 use crate::enemy::Enemy;        // }
-
+use crate::enemy::find_closest_enemy;
 
 #[derive(Component)]    //All UI's in battle screen have this component
 struct Textbox;
@@ -308,11 +308,16 @@ fn update_playerhp(
 }
 fn update_enemyhp(
     mut enemyhpquery: Query<&mut Text, With<Enemyhp>>,          //to change hp textbox
-    enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,      //to get hp and hp_max values
+    mut enemy_stat_query: Query<&mut EnemyStats, With<Enemy>>,      //to get hp and hp_max values
+    commands: Commands,
+    enemy_query: Query<(Entity, &Transform), With<Enemy>>,
+    player_query: Query<&Transform, With<Player>>,
 ){
-    if let Ok(enemy_stat) = enemy_stat_query.get_single(){
-        for mut text in &mut enemyhpquery.iter_mut(){
-            text.sections[0].value = enemy_stat.hp.to_string() + "/"+ &enemy_stat.max_hp.to_string();
+    if let Some(closest_enemy) = find_closest_enemy(&commands, &enemy_query, &player_query){
+        if let Ok(mut enemy_stat) = enemy_stat_query.get_mut(closest_enemy) {
+            for mut text in &mut enemyhpquery.iter_mut(){
+                text.sections[0].value = enemy_stat.hp.to_string() + "/"+ &enemy_stat.max_hp.to_string();
+            }
         }
     }
 }
