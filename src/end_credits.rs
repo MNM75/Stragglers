@@ -11,7 +11,7 @@ pub struct EndCreditsPlugin;
 
 impl Plugin for EndCreditsPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(ClearColor(Color::srgb(0.1, 0.1, 0.1)))
+        app.insert_resource(ClearColor(Color::srgb(1.0, 1.0, 1.0)))
         .add_systems(OnEnter(GameState::EndCredits), setup)
         .add_systems(OnEnter(GameState::EndCredits), replace_camera)
         .add_systems(Update, change_image.run_if(in_state(GameState::EndCredits)))

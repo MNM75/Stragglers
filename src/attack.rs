@@ -7,6 +7,7 @@ use crate::enemy::Enemy;
 
 use crate::player::PlayerStats;
 use crate::enemy::EnemyStats;
+use crate::enemybrain::chooseMove;
 
 
 pub fn choose_attack(
@@ -26,6 +27,7 @@ pub fn choose_attack(
     match enemy_stat_query.single().etype {
         1 => rand_attack(),
         2 => ai_attack(player_stat_query, enemy_stat_query),
+        3 => chooseMove(player_stat_query, enemy_stat_query),
         _ => 0,
     }
 }

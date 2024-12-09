@@ -14,6 +14,7 @@ mod turn_order;
 mod defeat;
 mod welcome;
 mod dungeon;
+mod enemybrain;
 
 //use map::MapPlugin;
 use welcome::WelcomePlugin;
